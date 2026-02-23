@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+  <h3>Order #{{ order.id }}</h3>
+  <p><strong>Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
+  <p><strong>Status:</strong> {{ order.status }}</p>
+  <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+
+  <hr>
+
+  <h4>Delivery Address</h4>
+  <p>
+    {{ order.address.full_name }}<br>
+    {{ order.address.address_line_1 }}
+    {% if order.address.address_line_2 %}, {{ order.address.address_line_2 }}{% endif %}<br>
+    {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}<br>
+    Phone: {{ order.address.phone }}
+  </p>
+
+  <hr>
+
+  <h4>Ordered Items</h4>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>₹{{ item.price }}</td>
+          <td>₹{{ item.price|floatformat:2 }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4 class="text-right">
+    Total: ₹{{ order.total_amount }}
+  </h4>
+
+  <a href="{% url 'order_history' %}" class="btn btn-outline">
+    Back to Orders
+  </a>
+
+</div>
+{% endblock %}

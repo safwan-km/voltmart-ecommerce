@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<h2>
+    {% if view.object %}
+        Edit Category
+    {% else %}
+        Create Category
+    {% endif %}
+</h2>
+
+<hr>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label>Name</label>
+        {{ form.name }}
+    </div>
+
+    <div class="checkbox">
+        <label>
+            {{ form.is_active }} Active
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Save
+    </button>
+
+    <a href="{% url 'dashboard:categories' %}"
+       class="btn btn-default">
+        Cancel
+    </a>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<h2>Dashboard Overview</h2>
+<hr>
+
+<div class="row">
+
+    <div class="col-md-3">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Total Orders</div>
+            <div class="panel-body">
+                <h3>{{ total_orders }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="panel panel-warning">
+            <div class="panel-heading">Pending Orders</div>
+            <div class="panel-body">
+                <h3>{{ pending_orders }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="panel panel-success">
+            <div class="panel-heading">Total Revenue</div>
+            <div class="panel-body">
+                <h3>₹ {{ revenue }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="panel panel-info">
+            <div class="panel-heading">Total Users</div>
+            <div class="panel-body">
+                <h3>{{ total_users }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">Total Products</div>
+            <div class="panel-body">
+                <h3>{{ total_products }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

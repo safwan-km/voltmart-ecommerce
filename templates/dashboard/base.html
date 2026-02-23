@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <div class="dashboard-wrapper">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h4>ADMIN</h4>
+        </div>
+
+        <ul class="sidebar-menu">
+          <li>
+            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:orders' %}">Orders</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:products' %}">Products</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:categories' %}">Categories</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:users' %}">Users</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:reports' %}">Reports</a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:coupons' %}">Coupons</a>
+          </li>
+          <hr />
+          <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-block">Logout</button>
+          </form>
+        </ul>
+      </div>
+
+      <div class="main-content">
+        <button class="btn btn-default visible-xs" id="sidebarToggle">☰</button>
+        {% if messages %}
+          <div style="margin-top:15px;">
+            {% for message in messages %}
+              <div class="alert 
+                    {% if message.tags == 'error' %}
+                  
+                        alert-danger
+
+                {% elif message.tags == 'success' %}
+                  
+                        alert-success
+
+                {% else %}
+                  
+                        alert-info
+
+                {% endif %}
+                    alert-dismissible fade in"
+                role="alert">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+  </body>
+</html>

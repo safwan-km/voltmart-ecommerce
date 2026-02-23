@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h3>My Profile</h3>
+
+  <p><strong>Username:</strong> {{ request.user.username }}</p>
+  <p><strong>Email:</strong> {{ request.user.email }}</p>
+
+  <hr>
+
+  <ul>
+    <li><a href="{% url 'address_list' %}">My Addresses</a></li>
+    <li>
+      <a href="{% url 'order_history' %}">My Orders</a>
+    </li>
+    <form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit" style="background:none;border:none;padding:0;color:#337ab7;">
+    Logout
+  </button>
+</form>
+  </ul>
+</div>
+{% endblock %}

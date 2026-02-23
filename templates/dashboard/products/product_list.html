@@ -1,0 +1,125 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<h2>Product Management</h2>
+<hr>
+
+<a href="{% url 'dashboard:product_create' %}" class="btn btn-success">
+    Add Product
+</a>
+
+<br><br>
+
+<form method="GET" class="form-inline">
+
+    <input type="text" name="search" class="form-control"
+           placeholder="Search product"
+           value="{{ request.GET.search }}">
+
+    <select name="status" class="form-control">
+        <option value="">All Status</option>
+        <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>
+            Active
+        </option>
+        <option value="inactive" {% if request.GET.status == "inactive" %}selected{% endif %}>
+            Inactive
+        </option>
+    </select>
+
+    <select name="sort" class="form-control">
+        <option value="">Newest</option>
+        <option value="price_high">Price High → Low</option>
+        <option value="price_low">Price Low → High</option>
+        <option value="stock_low">Lowest Stock</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<br>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>
+                <img src="{{ product.image.url }}" width="50">
+            </td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.category.name }}</td>
+            <td>₹ {{ product.price }}</td>
+            <td>
+                {% if product.stock == 0 %}
+                    <span class="label label-danger">Out of Stock</span>
+                {% elif product.stock <= 5 %}
+                    <span class="label label-warning">
+                        Low ({{ product.stock }})
+                    </span>
+                {% else %}
+                    {{ product.stock }}
+                {% endif %}
+            </td>
+
+            <td>
+            {% if not product.category.is_active %}
+                <span class="label label-default">Category Inactive</span>
+            {% elif product.is_active %}
+                <span class="label label-success">Active</span>
+            {% else %}
+                <span class="label label-default">Inactive</span>
+            {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'dashboard:product_edit' product.id %}"
+                   class="btn btn-xs btn-warning">
+                   Edit
+                </a>
+            
+                <form method="POST"
+                      action="{% url 'dashboard:product_toggle' product.id %}"
+                      style="display:inline;">
+                    {% csrf_token %}
+                    {% if product.is_active %}
+                        <button type="submit" class="btn btn-xs btn-warning">
+                            Deactivate
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-xs btn-success">
+                            Activate
+                        </button>
+                    {% endif %}
+
+                </form>
+            
+                <form method="POST"
+                      action="{% url 'dashboard:product_delete' product.id %}"
+                      style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit"class="btn btn-xs btn-danger"
+                    onclick="return confirm('This will permanently delete the product. Continue?');">
+                        Delete
+                    </button>
+
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No products found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

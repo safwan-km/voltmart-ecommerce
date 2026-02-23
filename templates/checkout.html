@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block breadcrumb %}
+{% with breadcrumb_title='Checkout' %}
+  {{ block.super }}
+{% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li>
+  <a href="{% url 'cart_page' %}">Cart</a>
+</li>
+<li class="active">Checkout</li>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="container">
+    <div class="row">
+
+      <!-- LEFT: ADDRESS + PAYMENT + PLACE ORDER -->
+      <div class="col-md-7">
+        <div class="section">
+
+          {% if addresses %}
+          <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+
+            <!-- ADDRESS SELECTION -->
+            <h3>Select Delivery Address</h3>
+
+            {% for address in addresses %}
+              <label
+                class="address-card"
+                style="display:block; border:1px solid #ddd; padding:15px; margin-bottom:10px; cursor:pointer;"
+              >
+                <input
+                  type="radio"
+                  name="address_id"
+                  value="{{ address.id }}"
+                  {% if forloop.first %}checked{% endif %}
+                  required
+                  style="margin-right:10px;"
+                />
+
+                <strong>{{ address.full_name }}</strong><br>
+                {{ address.address_line_1 }}
+                {% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
+                {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                Phone: {{ address.phone }}
+
+                <div style="margin-top:5px;">
+                  <a
+                    href="{% url 'edit_address' address.id %}?next=checkout"
+                    style="font-size:13px;"
+                  >
+                    Edit
+                  </a>
+                </div>
+              </label>
+            {% endfor %}
+
+            <a href="{% url 'add_address' %}?next=checkout" class="btn btn-outline">
+              + Add New Address
+            </a>
+
+            <hr>
+
+            <!-- PAYMENT METHOD -->
+            <h4>Payment Method</h4>
+
+            <label>
+              <input type="radio" name="payment_method" value="COD" checked>
+              Cash on Delivery
+            </label><br>
+
+            <label>
+              <input type="radio" name="payment_method" value="CARD">
+              Card
+            </label><br>
+
+            <label>
+              <input type="radio" name="payment_method" value="UPI">
+              UPI
+            </label>
+
+            <hr>
+
+            <!-- PLACE ORDER -->
+            <button type="submit" class="primary-btn">
+              PLACE ORDER
+            </button>
+
+          </form>
+
+          {% else %}
+            <p>No address found.</p>
+            <a href="{% url 'add_address' %}?next=checkout" class="primary-btn">
+              Add Address
+            </a>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div class="col-md-5 order-details">
+        <div class="section-title text-center">
+          <h3 class="title">Your Order</h3>
+        </div>
+
+        <div class="order-summary">
+          <div class="order-col">
+            <div><strong>PRODUCT</strong></div>
+            <div><strong>TOTAL</strong></div>
+          </div>
+
+          <div class="order-products">
+            {% for item in cart_items %}
+              <div class="order-col">
+                <div>
+                  {{ item.quantity }} × {{ item.product.name }}
+                </div>
+                <div>
+                  ₹{{ item.product.price|floatformat:2 }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="order-col">
+            <div><strong>TOTAL</strong></div>
+            <div>
+              <strong class="order-total">
+                ₹{{ total_amount|floatformat:2 }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

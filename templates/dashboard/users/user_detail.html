@@ -1,0 +1,97 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<h2>User: {{ user_obj.username }}</h2>
+<hr>
+
+<p><strong>Email:</strong> {{ user_obj.email }}</p>
+<p><strong>Status:</strong> {{ user_obj.is_active }}</p>
+<p>
+    <strong>Status:</strong>
+    {% if user_obj.is_active %}
+        <span class="label label-success">Active</span>
+    {% else %}
+        <span class="label label-danger">Inactive</span>
+    {% endif %}
+</p>
+
+<p>
+    <strong>Role:</strong>
+    {% if user_obj.is_superuser %}
+        <span class="label label-danger">Superuser</span>
+    {% elif user_obj.is_staff %}
+        <span class="label label-info">Staff</span>
+    {% else %}
+        Customer
+    {% endif %}
+</p>
+{% if user_obj.is_superuser %}
+    <div class="alert alert-warning">
+        This account has full system control.
+    </div>
+{% endif %}
+
+{% if request.user.is_superuser and not user_obj.is_superuser %}
+
+    <form method="POST"
+          action="{% url 'dashboard:user_toggle_staff' user_obj.id %}"
+          style="display:inline;">
+        {% csrf_token %}
+        {% if user_obj.is_staff %}
+            <button class="btn btn-danger btn-sm">
+                Remove Staff
+            </button>
+        {% else %}
+            <button class="btn btn-info btn-sm">
+                Make Staff
+            </button>
+        {% endif %}
+    </form>
+
+{% endif %}
+
+
+
+<p><strong>Date Joined:</strong> {{ user_obj.date_joined }}</p>
+
+<hr>
+
+<h4>Orders</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in user_obj.orders.all %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>₹ {{ order.total_amount }}</td>
+            <td>
+                {% if order.status == "PENDING" %}
+                    <span class="label label-warning">Pending</span>
+                {% elif order.status == "PAID" %}
+                    <span class="label label-success">Paid</span>
+                {% elif order.status == "FAILED" %}
+                    <span class="label label-danger">Failed</span>
+                {% elif order.status == "CANCELLED" %}
+                    <span class="label label-default">Cancelled</span>
+                {% endif %}
+            </td>
+
+            <td>{{ order.created_at }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No orders.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

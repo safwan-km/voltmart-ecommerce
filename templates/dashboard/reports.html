@@ -1,0 +1,185 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<h2>Reports</h2>
+<hr>
+
+<!-- Date Filter -->
+<form method="GET" class="form-inline">
+    <label>From:</label>
+    <input type="date" name="date_from" class="form-control"
+           value="{{ date_from }}">
+
+    <label>To:</label>
+    <input type="date" name="date_to" class="form-control"
+           value="{{ date_to }}">
+
+    <button type="submit" class="btn btn-primary">Apply</button>
+</form>
+
+<br>
+
+<!-- Revenue Summary Cards -->
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="panel panel-success">
+            <div class="panel-heading">Total Revenue</div>
+            <div class="panel-body">
+                ₹ {{ total_revenue }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">Total Orders</div>
+            <div class="panel-body">
+                {{ total_orders }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-warning">
+            <div class="panel-heading">Average Order Value</div>
+            <div class="panel-body">
+                ₹ {{ avg_order_value|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr>
+
+<!-- Order Status Breakdown -->
+<h4>Order Status Breakdown</h4>
+
+<div style="max-width: 500px; margin: 20px auto;">
+    <canvas id="statusChart"></canvas>
+</div>
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in status_data %}
+        <tr>
+            <td>{{ item.status }}</td>
+            <td>{{ item.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<!-- Top Selling Products -->
+<h4>Top Selling Products</h4>
+
+<div style="max-width: 700px; margin: 20px auto;">
+    <canvas id="productChart"></canvas>
+</div>
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Total Quantity</th>
+            <th>Total Revenue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in top_products %}
+        <tr>
+            <td>{{ item.product__name }}</td>
+            <td>{{ item.total_quantity }}</td>
+            <td>₹ {{ item.total_revenue }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<!-- Coupon Usage -->
+<h4>Coupon Usage</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Coupon Code</th>
+            <th>Total Used</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in coupon_usage %}
+        <tr>
+            <td>{{ item.coupon__code }}</td>
+            <td>{{ item.total_used }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+    new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: [
+                {% for item in status_data %}
+                    "{{ item.status }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for item in status_data %}
+                        {{ item.count }},
+                    {% endfor %}
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+
+
+    // Product Chart
+    const productCtx = document.getElementById('productChart').getContext('2d');
+
+    new Chart(productCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for item in top_products %}
+                    "{{ item.product__name }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Quantity Sold',
+                data: [
+                    {% for item in top_products %}
+                        {{ item.total_quantity }},
+                    {% endfor %}
+                ]
+            }]
+        }
+    });
+</script>
+
+{% endblock %}

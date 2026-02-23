@@ -1,0 +1,91 @@
+{% extends "dashboard/base.html" %}
+{% now "Y-m-d H:i:s" as now %}
+{% block content %}
+
+<h2>Coupon Management</h2>
+<hr>
+
+<a href="{% url 'dashboard:coupon_create' %}" class="btn btn-success">
+    Create Coupon
+</a>
+
+<br><br>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Expiry</th>
+            <th>Per User Limit</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for coupon in coupons %}
+        <tr>
+            <td>{{ coupon.code }}</td>
+            <td>
+                {% if coupon.discount_type == "PERCENTAGE" %}
+                    <span class="label label-info">%</span>
+                {% else %}
+                    <span class="label label-primary">₹</span>
+                {% endif %}
+            </td>
+            <td>{{ coupon.discount_value }}</td>
+            <td>
+                {% if coupon.expiry_date %}
+                    {% if coupon.expiry_date < now %}
+                        <span class="label label-danger">Expired</span>
+                    {% else %}
+                        {{ coupon.expiry_date }}
+                    {% endif %}
+                {% else %}
+                    <span class="label label-info">No Expiry</span>
+                {% endif %}
+            </td>
+
+            <td>{{ coupon.per_user_limit }}</td>
+            <td>
+                {% if coupon.is_active %}
+                    <span class="label label-success">Active</span>
+                {% else %}
+                    <span class="label label-default">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'dashboard:coupon_edit' coupon.id %}"
+                   class="btn btn-xs btn-warning">Edit</a>
+
+                <form method="POST"
+                      action="{% url 'dashboard:coupon_toggle' coupon.id %}"
+                      style="display:inline;">
+                    {% csrf_token %}
+                    {% if coupon.is_active %}
+                        <button class="btn btn-xs btn-warning">
+                            Deactivate
+                        </button>
+                    {% else %}
+                        <button class="btn btn-xs btn-success">
+                            Activate
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a href="{% url 'dashboard:coupon_delete' coupon.id %}"
+                   class="btn btn-xs btn-danger">
+                    Delete
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No coupons found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}My Addresses{% endblock %}
+
+
+{% block content %}
+
+{% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+      <div class="alert 
+        {% if message.tags == 'error' %}
+          alert-danger
+        {% else %}
+          alert-{{ message.tags }}
+        {% endif %}
+        alert-dismissible">
+        
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+<div class="container mt-5">
+  <h3>My Addresses</h3>
+
+  <a href="{% url 'add_address' %}?next=address_list" class="btn btn-outline mb-3">
+    + Add New Address
+  </a>
+
+  {% if addresses %}
+    {% for address in addresses %}
+      <div class="border p-3 mb-3">
+        <strong>{{ address.full_name }}</strong><br>
+        {{ address.address_line_1 }}
+        {% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
+        {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+        Phone: {{ address.phone }}
+
+        <div class="mt-2">
+          <a href="{% url 'edit_address' address.id %}?next=address_list">Edit</a>
+          |
+          <form method="post"
+              action="{% url 'delete_address' address.id %}"
+              style="display:inline;"
+              onsubmit="return confirm('Delete this address?');">
+          {% csrf_token %}
+          <button type="submit"
+                  style="background:none;border:none;color:#337ab7;padding:0;">
+            Delete
+          </button>
+        </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No addresses saved.</p>
+  {% endif %}
+</div>
+{% endblock %}

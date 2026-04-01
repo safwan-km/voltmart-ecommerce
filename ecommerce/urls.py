@@ -22,17 +22,12 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('cart/', include('cart.urls')),
-    # path('accounts/', include('django.contrib.auth.urls')),
     path('orders/', include('orders.urls')),
     path('payments/', include('payments.urls')),
-    path('', include('products.urls')),
-    path('', include('accounts.urls')),
-    
     path('dashboard/', include('dashboard.urls')),
 
-    
-     # Your custom accounts views (profile)
-    path('', include('accounts.urls')),
+    path('', include('products.urls')),
+    path('accounts/', include('accounts.urls')), 
 ]
 
 if settings.DEBUG:

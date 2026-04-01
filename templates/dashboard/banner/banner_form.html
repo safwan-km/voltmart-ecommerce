@@ -1,0 +1,69 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<h2>Create Banner</h2>
+
+<form method="POST" enctype="multipart/form-data" class="form-horizontal">
+
+{% csrf_token %}
+
+<div class="form-group">
+<label class="col-md-2 control-label">Title</label>
+<div class="col-md-6">
+{{ form.title }}
+</div>
+</div>
+
+<div class="form-group">
+<label class="col-md-2 control-label">Subtitle</label>
+<div class="col-md-6">
+{{ form.subtitle }}
+</div>
+</div>
+
+<div class="form-group">
+<label class="col-md-2 control-label">Banner Image</label>
+<div class="col-md-6">
+{{ form.image }}
+</div>
+</div>
+
+<div class="form-group">
+<label class="col-md-2 control-label">Product</label>
+<div class="col-md-6">
+{{ form.product }}
+</div>
+</div>
+
+<div class="form-group">
+<label class="col-md-2 control-label">Theme</label>
+<div class="col-md-6">
+{{ form.theme }}
+</div>
+</div>
+
+<div class="form-group">
+<div class="col-md-offset-2 col-md-6">
+<label>{{ form.is_active }} Active Banner</label>
+</div>
+</div>
+
+<div class="form-group">
+<div class="col-md-offset-2 col-md-6">
+
+<button type="submit" class="btn btn-success">
+Save Banner
+</button>
+
+<a href="{% url 'dashboard:banner_list' %}"
+class="btn btn-default">
+Cancel
+</a>
+
+</div>
+</div>
+
+</form>
+
+{% endblock %}

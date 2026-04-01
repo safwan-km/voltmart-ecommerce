@@ -20,42 +20,52 @@
   <div class="container">
     <div class="row">
 
-      <!-- LEFT: ADDRESS + PAYMENT + PLACE ORDER -->
-      <div class="col-md-7">
-        <div class="section">
+      {% if addresses %}
+      <form method="post" action="{% url 'checkout' %}">
+        {% csrf_token %}
+        {% if is_buy_now %}
+        <input type="hidden" name="is_buy_now" value="true">
+        {% endif %}
 
-          {% if addresses %}
-          <form method="post" action="{% url 'checkout' %}">
-            {% csrf_token %}
+        <!-- GLOBAL MESSAGES -->
+        {% if messages %}
+          <div class="col-md-12" style="margin-bottom:15px;">
+            {% for message in messages %}
+              <div class="alert alert-danger">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
 
-            <!-- ADDRESS SELECTION -->
+        <!-- LEFT COLUMN -->
+        <div class="col-md-7">
+          <div class="section">
+
             <h3>Select Delivery Address</h3>
 
             {% for address in addresses %}
-              <label
-                class="address-card"
-                style="display:block; border:1px solid #ddd; padding:15px; margin-bottom:10px; cursor:pointer;"
-              >
-                <input
-                  type="radio"
-                  name="address_id"
-                  value="{{ address.id }}"
-                  {% if forloop.first %}checked{% endif %}
-                  required
-                  style="margin-right:10px;"
-                />
+              <label class="address-card">
+                <input type="radio"
+                       name="address_id"
+                       value="{{ address.id }}"
+                       {% if forloop.first %}checked{% endif %}
+                       required>
 
-                <strong>{{ address.full_name }}</strong><br>
-                {{ address.address_line_1 }}
-                {% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
-                {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
-                Phone: {{ address.phone }}
+                <div class="address-content">
+                  <div class="address-name">
+                    {{ address.full_name }}
+                  </div>
 
-                <div style="margin-top:5px;">
-                  <a
-                    href="{% url 'edit_address' address.id %}?next=checkout"
-                    style="font-size:13px;"
-                  >
+                  <div class="address-text">
+                    {{ address.address_line_1 }}
+                    {% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
+                    {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                    Phone: {{ address.phone }}
+                  </div>
+
+                  <a href="{% url 'edit_address' address.id %}?next=checkout"
+                     class="address-edit-link">
                     Edit
                   </a>
                 </div>
@@ -66,84 +76,169 @@
               + Add New Address
             </a>
 
-            <hr>
-
-            <!-- PAYMENT METHOD -->
-            <h4>Payment Method</h4>
-
-            <label>
-              <input type="radio" name="payment_method" value="COD" checked>
-              Cash on Delivery
-            </label><br>
-
-            <label>
-              <input type="radio" name="payment_method" value="CARD">
-              Card
-            </label><br>
-
-            <label>
-              <input type="radio" name="payment_method" value="UPI">
-              UPI
-            </label>
-
-            <hr>
-
-            <!-- PLACE ORDER -->
-            <button type="submit" class="primary-btn">
-              PLACE ORDER
-            </button>
-
-          </form>
-
-          {% else %}
-            <p>No address found.</p>
-            <a href="{% url 'add_address' %}?next=checkout" class="primary-btn">
-              Add Address
-            </a>
-          {% endif %}
-
+          </div>
         </div>
+
+        <!-- RIGHT COLUMN -->
+<div class="col-md-5 order-details">
+
+  <div class="section-title text-center">
+    <h3 class="title">Your Order</h3>
+  </div>
+
+  <!-- ORDER SUMMARY BOX -->
+  <div class="order-summary">
+
+    <div class="order-col">
+      <div><strong>PRODUCT</strong></div>
+      <div><strong>TOTAL</strong></div>
+    </div>
+
+    <div class="order-products">
+      {% for item in cart_items %}
+      <div class="order-col">
+        <div>{{ item.quantity }} × {{ item.product.name }}</div>
+        <div>₹{{ item.product.price|floatformat:2 }}</div>
       </div>
+      {% endfor %}
+    </div>
 
-      <!-- RIGHT: ORDER SUMMARY -->
-      <div class="col-md-5 order-details">
-        <div class="section-title text-center">
-          <h3 class="title">Your Order</h3>
-        </div>
+    <hr>
 
-        <div class="order-summary">
-          <div class="order-col">
-            <div><strong>PRODUCT</strong></div>
-            <div><strong>TOTAL</strong></div>
+    <!-- COUPON SECTION -->
+    <div class="coupon-section">
+
+      <h4>Offers for you</h4>
+
+      {% for c in available_coupons %}
+      <div class="coupon-card">
+
+        <div class="coupon-info">
+          <div class="coupon-title">
+            {% if c.discount_type == "PERCENTAGE" %}
+              Get {{ c.discount_value }}% OFF
+            {% else %}
+              Get Flat ₹{{ c.discount_value }} OFF
+            {% endif %}
           </div>
-
-          <div class="order-products">
-            {% for item in cart_items %}
-              <div class="order-col">
-                <div>
-                  {{ item.quantity }} × {{ item.product.name }}
-                </div>
-                <div>
-                  ₹{{ item.product.price|floatformat:2 }}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-
-          <div class="order-col">
-            <div><strong>TOTAL</strong></div>
-            <div>
-              <strong class="order-total">
-                ₹{{ total_amount|floatformat:2 }}
-              </strong>
-            </div>
+          <div class="coupon-code">
+            Code: {{ c.code }}
           </div>
         </div>
+
+        {% if applied_coupon and applied_coupon.id == c.id %}
+          <button type="submit"
+                  name="remove_coupon"
+                  class="coupon-remove-btn">
+            Remove
+          </button>
+        {% else %}
+          <button type="submit"
+                  name="apply_coupon"
+                  value="{{ c.code }}"
+                  class="coupon-apply-btn">
+            Apply
+          </button>
+        {% endif %}
 
       </div>
+      {% empty %}
+        <p style="font-size:13px; color:#777;">
+          No active offers available.
+        </p>
+      {% endfor %}
+
+      <hr>
+
+      <h5>Or enter coupon manually</h5>
+      <div class="manual-coupon-wrapper">
+        <input type="text"
+               name="coupon_code"
+               placeholder="Enter coupon code"
+               class="form-control">
+        <button type="submit"
+                name="apply_coupon_manual"
+                class="primary-btn">
+          APPLY
+        </button>
+      </div>
+
+      {% if applied_coupon %}
+        <p class="applied-coupon-text">
+          Applied Coupon: <strong>{{ applied_coupon.code }}</strong>
+        </p>
+      {% endif %}
+
+    </div>
+
+    <hr>
+
+    <div class="order-col">
+      <div><strong>Subtotal</strong></div>
+      <div>₹{{ subtotal|floatformat:2 }}</div>
+    </div>
+
+    {% if discount_amount > 0 %}
+    <div class="order-col">
+      <div><strong>Discount</strong></div>
+      <div>- ₹{{ discount_amount|floatformat:2 }}</div>
+    </div>
+    {% endif %}
+
+    <div class="order-col">
+      <div><strong>Final Total</strong></div>
+      <div>
+        <strong class="order-total">
+          ₹{{ final_amount|floatformat:2 }}
+        </strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAYMENT + PLACE ORDER (OUTSIDE summary box) -->
+  <div class="checkout-payment-section" style="margin-top:20px;">
+
+    <h4>Payment Method</h4>
+
+    <div class="payment-options" style="margin-bottom:15px;">
+      <label>
+        <input type="radio" name="payment_method" value="COD" checked>
+        Cash on Delivery
+      </label><br>
+
+      <label>
+        <input type="radio" name="payment_method" value="CARD">
+        Card
+      </label><br>
+
+      <label>
+        <input type="radio" name="payment_method" value="UPI">
+        UPI
+      </label>
+    </div>
+
+    <button type="submit"
+            name="place_order"
+            class="primary-btn full-width">
+      PLACE ORDER
+    </button>
+
+  </div>
+
+</div>
+      </form>
+
+      {% else %}
+        <div class="col-md-12">
+          <p>No address found.</p>
+          <a href="{% url 'add_address' %}?next=checkout" class="primary-btn">
+            Add Address
+          </a>
+        </div>
+      {% endif %}
 
     </div>
   </div>
 </div>
-
 {% endblock %}

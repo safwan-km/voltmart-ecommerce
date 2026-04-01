@@ -2,57 +2,171 @@
 
 {% block title %}Order #{{ order.id }}{% endblock %}
 
+{% block breadcrumb %}
+  {% with breadcrumb_title='Order Details' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li><a href="{% url 'profile' %}">My Account</a></li>
+  <li><a href="{% url 'order_history' %}">My Orders</a></li>
+  <li class="active">Order #{{ order.id }}</li>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+<div style="background:#f5f5f5; padding:50px 0;">
+  <div class="container">
 
-  <h3>Order #{{ order.id }}</h3>
-  <p><strong>Date:</strong> {{ order.created_at|date:"d M Y" }}</p>
-  <p><strong>Status:</strong> {{ order.status }}</p>
-  <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+    <!-- PAGE HEADER -->
+    <div style="background:#fff; padding:30px; border-radius:6px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <div style="display:flex; align-items:justify-content; margin-bottom:0;">
+        <div style="display:flex; align-items:center;">
+          <div style="width:60px; height:60px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:20px;">
+            <i class="fa fa-file-text" style="font-size:28px; color:#D10024;"></i>
+          </div>
+          <div>
+            <h3 style="color:#2B2D42; margin:0; font-weight:600;">Order #{{ order.id }}</h3>
+            <p style="color:#8D99AE; font-size:14px; margin:5px 0 0 0;">Order details and tracking information</p>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Processing' %}badge-warning{% else %}badge-secondary{% endif %}"
+                style="font-size:14px; padding:10px 20px; font-weight:600;">
+            {{ order.status }}
+          </span>
+          <p style="color:#8D99AE; font-size:12px; margin:8px 0 0 0;">
+            <i class="fa fa-calendar" style="margin-right:5px;"></i>{{ order.created_at|date:"d M Y, H:i" }}
+          </p>
+        </div>
+      </div>
+    </div>
 
-  <hr>
+    <div class="row">
+      <div class="col-md-12">
+        <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
 
-  <h4>Delivery Address</h4>
-  <p>
-    {{ order.address.full_name }}<br>
-    {{ order.address.address_line_1 }}
-    {% if order.address.address_line_2 %}, {{ order.address.address_line_2 }}{% endif %}<br>
-    {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}<br>
-    Phone: {{ order.address.phone }}
-  </p>
+          <!-- Order Info Cards -->
+          <div class="row" style="margin-bottom:30px;">
+            <div class="col-md-6">
+              <div style="background:#f8f9fa; padding:25px; border-radius:6px; height:100%; border-left:4px solid #D10024;">
+                <h5 style="color:#2B2D42; margin-bottom:15px; font-weight:600;">
+                  <i class="fa fa-credit-card" style="color:#D10024; margin-right:8px;"></i>Payment Information
+                </h5>
+                <div style="color:#333; line-height:1.6;">
+                  <p style="margin:0 0 8px 0;"><strong>Method:</strong> {{ order.payment_method }}</p>
+                  <p style="margin:0 0 8px 0;"><strong>Status:</strong> <span style="color:#4CAF50; font-weight:500;">Paid</span></p>
+                  <p style="margin:0; font-size:18px;">
+                    <strong>Total Amount:</strong>
+                    <span style="color:#D10024; font-size:20px; font-weight:700;">₹{{ order.final_amount }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div style="background:#f8f9fa; padding:25px; border-radius:6px; height:100%; border-left:4px solid #D10024;">
+                <h5 style="color:#2B2D42; margin-bottom:15px; font-weight:600;">
+                  <i class="fa fa-map-marker" style="color:#D10024; margin-right:8px;"></i>Delivery Address
+                </h5>
+                <div style="color:#333; line-height:1.6;">
+                  <p style="margin:0 0 8px 0; font-weight:600;">{{ order.address.full_name }}</p>
+                  <p style="margin:0 0 8px 0;">
+                    {{ order.address.address_line_1 }}
+                    {% if order.address.address_line_2 %}<br>{{ order.address.address_line_2 }}{% endif %}
+                  </p>
+                  <p style="margin:0 0 8px 0;">
+                    {{ order.address.city }}, {{ order.address.state }} - {{ order.address.pincode }}
+                  </p>
+                  <p style="margin:0; color:#666;">
+                    <i class="fa fa-phone" style="margin-right:5px;"></i>{{ order.address.phone }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <hr>
+          <!-- Ordered Items -->
+          <h4 style="color:#2B2D42; margin-bottom:20px; border-bottom:2px solid #E4E7ED; padding-bottom:10px; font-weight:600;">
+            <i class="fa fa-shopping-cart" style="color:#D10024; margin-right:8px;"></i>Ordered Items
+          </h4>
 
-  <h4>Ordered Items</h4>
+          <div class="table-responsive">
+            <table class="table table-hover" style="margin-bottom:30px;">
+              <thead style="background:#f8f9fa;">
+                <tr>
+                  <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Product</th>
+                  <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px; text-align:center;">Qty</th>
+                  <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px; text-align:right;">Price</th>
+                  <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px; text-align:right;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in order.items.all %}
+                  <tr style="border-bottom:1px solid #E4E7ED; transition:background 0.2s ease;">
+                    <td style="padding:15px 8px;">
+                      <div style="display:flex; align-items:center;">
+                        {% if item.product.image %}
+                          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                               style="width:60px; height:60px; object-fit:cover; border-radius:6px; margin-right:15px; border:1px solid #E4E7ED;">
+                        {% else %}
+                          <div style="width:60px; height:60px; background:#f8f9fa; border-radius:6px; margin-right:15px; display:flex; align-items:center; justify-content:center; border:1px solid #E4E7ED;">
+                            <i class="fa fa-image" style="color:#E4E7ED; font-size:20px;"></i>
+                          </div>
+                        {% endif %}
+                        <div>
+                          <strong style="color:#2B2D42; font-size:15px;">{{ item.product.name }}</strong>
+                          {% if item.product.brand %}
+                            <br><small style="color:#8D99AE;">Brand: {{ item.product.brand }}</small>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </td>
+                    <td style="padding:15px 8px; text-align:center; color:#333; font-weight:500; font-size:16px;">{{ item.quantity }}</td>
+                    <td style="padding:15px 8px; text-align:right; color:#333; font-weight:500;">₹{{ item.price }}</td>
+                    <td style="padding:15px 8px; text-align:right; color:#D10024; font-weight:600; font-size:16px;">₹{{ item.subtotal }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
 
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>Subtotal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in order.items.all %}
-        <tr>
-          <td>{{ item.product }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>₹{{ item.price }}</td>
-          <td>₹{{ item.price|floatformat:2 }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          <!-- Order Total -->
+          <div style="background:#f8f9fa; padding:25px; border-radius:6px; margin-bottom:30px; border-left:4px solid #D10024;">
+            <div class="row">
+              <div class="col-md-8">
+                <h5 style="color:#2B2D42; margin:0; font-weight:600;">Order Summary</h5>
+                <p style="color:#8D99AE; font-size:13px; margin:5px 0 0 0;">Complete order breakdown</p>
+              </div>
+              <div class="col-md-4 text-right">
+                <div style="font-size:16px; color:#2B2D42;">
+                  <strong>Total Amount</strong>
+                  <div style="color:#D10024; font-size:28px; font-weight:700; margin-top:5px;">₹{{ order.final_amount }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <h4 class="text-right">
-    Total: ₹{{ order.total_amount }}
-  </h4>
+          <!-- Action Buttons -->
+          <div style="text-center; display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+            <a href="{% url 'order_history' %}"
+               style="padding:12px 25px; background:#f8f9fa; color:#2B2D42; border:1px solid #E4E7ED; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
+              <i class="fa fa-arrow-left" style="margin-right:8px;"></i>Back to Orders
+            </a>
+            {% if order.status == 'Delivered' %}
+              <a href="#"
+                 style="padding:12px 25px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
+                <i class="fa fa-star" style="margin-right:8px;"></i>Write Review
+              </a>
+            {% endif %}
+            <a href="#"
+               style="padding:12px 25px; background:#4CAF50; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
+              <i class="fa fa-download" style="margin-right:8px;"></i>Download Invoice
+            </a>
+          </div>
 
-  <a href="{% url 'order_history' %}" class="btn btn-outline">
-    Back to Orders
-  </a>
-
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

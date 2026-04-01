@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block breadcrumb %}
+  {% with breadcrumb_title='Edit Profile' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li><a href="{% url 'profile' %}">My Account</a></li>
+  <li class="active">Edit Profile</li>
+{% endblock %}
+
+{% block content %}
+<div style="background:#f5f5f5; padding:50px 0;">
+  <div class="container">
+    <div style="max-width:600px; margin:auto;">
+
+      <!-- PAGE HEADER -->
+      <div style="background:#fff; padding:30px; border-radius:6px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display:flex; align-items:center; margin-bottom:0;">
+          <div style="width:60px; height:60px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:20px;">
+            <i class="fa fa-edit" style="font-size:28px; color:#D10024;"></i>
+          </div>
+          <div>
+            <h3 style="color:#2B2D42; margin:0; font-weight:600;">Edit Profile</h3>
+            <p style="color:#8D99AE; font-size:14px; margin:5px 0 0 0;">Update your account information</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM CARD -->
+      <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Username Field -->
+          <div style="margin-bottom:25px;">
+            <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+              <i class="fa fa-user" style="color:#D10024; margin-right:8px;"></i>Username
+            </label>
+            {{ form.username }}
+            <style>
+              #id_username {
+                width: 100%;
+                padding: 12px 15px;
+                border: 1px solid #E4E7ED;
+                border-radius: 4px;
+                font-size: 14px;
+                font-family: inherit;
+                transition: border-color 0.3s ease;
+              }
+              #id_username:focus {
+                outline: none;
+                border-color: #D10024;
+                box-shadow: 0 0 0 3px rgba(209, 0, 36, 0.1);
+              }
+            </style>
+            {% if form.username.errors %}
+              <div style="color:#D10024; font-size:13px; margin-top:8px;">
+                {% for error in form.username.errors %}
+                  <p style="margin:0;">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Email Field -->
+          <div style="margin-bottom:30px;">
+            <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+              <i class="fa fa-envelope" style="color:#D10024; margin-right:8px;"></i>Email Address
+            </label>
+            {{ form.email }}
+            <style>
+              #id_email {
+                width: 100%;
+                padding: 12px 15px;
+                border: 1px solid #E4E7ED;
+                border-radius: 4px;
+                font-size: 14px;
+                font-family: inherit;
+                transition: border-color 0.3s ease;
+              }
+              #id_email:focus {
+                outline: none;
+                border-color: #D10024;
+                box-shadow: 0 0 0 3px rgba(209, 0, 36, 0.1);
+              }
+            </style>
+            {% if form.email.errors %}
+              <div style="color:#D10024; font-size:13px; margin-top:8px;">
+                {% for error in form.email.errors %}
+                  <p style="margin:0;">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- BUTTONS -->
+          <div style="display:flex; gap:15px;">
+            <button type="submit" style="flex:1; padding:13px; background:#D10024; color:#fff; border:none; border-radius:4px; font-weight:600; font-size:14px; cursor:pointer; transition:background 0.3s ease; text-transform:uppercase;">
+              <i class="fa fa-save" style="margin-right:8px;"></i>Save Changes
+            </button>
+            <a href="{% url 'profile' %}" style="flex:1; padding:13px; background:#f8f9fa; color:#2B2D42; border:1px solid #E4E7ED; border-radius:4px; font-weight:600; font-size:14px; text-align:center; text-decoration:none; transition:all 0.3s ease; text-transform:uppercase;">
+              <i class="fa fa-times" style="margin-right:8px;"></i>Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- INFO MESSAGE -->
+      <div style="background:#FFF3E0; border-left:4px solid #FF9800; padding:20px; border-radius:4px; margin-top:20px;">
+        <p style="color:#E65100; font-size:13px; margin:0;">
+          <i class="fa fa-info-circle" style="margin-right:8px;"></i>
+          <strong>Note:</strong> Your changes will be saved immediately. If you need to change your password, please use the Change Password option.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

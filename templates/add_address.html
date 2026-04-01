@@ -2,56 +2,133 @@
 
 {% block title %}Add Address{% endblock %}
 
+{% block breadcrumb %}
+  {% with breadcrumb_title='Add Address' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li><a href="{% url 'profile' %}">My Account</a></li>
+  <li><a href="{% url 'address_list' %}">My Addresses</a></li>
+  <li class="active">Add Address</li>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <h3>Add New Address</h3>
+<div style="background:#f5f5f5; padding:50px 0;">
+  <div class="container">
+    <div style="max-width:700px; margin:auto;">
 
-  <form method="post">
-    {% csrf_token %}
+      <!-- PAGE HEADER -->
+      <div style="background:#fff; padding:30px; border-radius:6px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display:flex; align-items:center; margin-bottom:0;">
+          <div style="width:60px; height:60px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:20px;">
+            <i class="fa fa-plus" style="font-size:28px; color:#D10024;"></i>
+          </div>
+          <div>
+            <h3 style="color:#2B2D42; margin:0; font-weight:600;">Add New Address</h3>
+            <p style="color:#8D99AE; font-size:14px; margin:5px 0 0 0;">Add a delivery address for faster checkout</p>
+          </div>
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label>Full Name</label>
-      <input type="text" name="full_name" class="form-control" required>
+      <!-- FORM CARD -->
+      <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="row">
+            <!-- Full Name -->
+            <div class="col-md-6" style="margin-bottom:25px;">
+              <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+                <i class="fa fa-user" style="color:#D10024; margin-right:8px;"></i>Full Name
+              </label>
+              <input type="text" name="full_name" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-6" style="margin-bottom:25px;">
+              <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+                <i class="fa fa-phone" style="color:#D10024; margin-right:8px;"></i>Phone Number
+              </label>
+              <input type="text" name="phone" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+            </div>
+          </div>
+
+          <!-- Address Line 1 -->
+          <div style="margin-bottom:25px;">
+            <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+              <i class="fa fa-home" style="color:#D10024; margin-right:8px;"></i>Address Line 1
+            </label>
+            <input type="text" name="address_line_1" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" placeholder="Street address, building name" required>
+          </div>
+
+          <!-- Address Line 2 -->
+          <div style="margin-bottom:25px;">
+            <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+              <i class="fa fa-building" style="color:#D10024; margin-right:8px;"></i>Address Line 2 (Optional)
+            </label>
+            <input type="text" name="address_line_2" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" placeholder="Apartment, suite, unit, building, floor, etc.">
+          </div>
+
+          <div class="row">
+            <!-- City -->
+            <div class="col-md-4" style="margin-bottom:25px;">
+              <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+                <i class="fa fa-city" style="color:#D10024; margin-right:8px;"></i>City
+              </label>
+              <input type="text" name="city" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+            </div>
+
+            <!-- District -->
+            <div class="col-md-4" style="margin-bottom:25px;">
+              <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+                <i class="fa fa-map" style="color:#D10024; margin-right:8px;"></i>District
+              </label>
+              <input type="text" name="district" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+            </div>
+
+            <!-- State -->
+            <div class="col-md-4" style="margin-bottom:25px;">
+              <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+                <i class="fa fa-map" style="color:#D10024; margin-right:8px;"></i>State
+              </label>
+              <input type="text" name="state" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+            </div>
+          </div>
+
+          <!-- Pincode -->
+          <div style="margin-bottom:30px;">
+            <label style="display:block; color:#2B2D42; font-weight:600; margin-bottom:8px; font-size:14px;">
+              <i class="fa fa-map-pin" style="color:#D10024; margin-right:8px;"></i>Pincode
+            </label>
+            <input type="text" name="pincode" class="form-control" style="height:45px; border:1px solid #E4E7ED; border-radius:4px; padding:0 15px; font-size:14px;" required>
+          </div>
+
+          <!-- BUTTONS -->
+          <div style="display:flex; gap:15px;">
+            <button type="submit" style="flex:1; padding:13px; background:#D10024; color:#fff; border:none; border-radius:4px; font-weight:600; font-size:14px; cursor:pointer; text-transform:uppercase;">
+              <i class="fa fa-save" style="margin-right:8px;"></i>Save Address
+            </button>
+            <a href="{% url 'address_list' %}" style="flex:1; padding:13px; background:#f8f9fa; color:#2B2D42; border:1px solid #E4E7ED; border-radius:4px; font-weight:600; font-size:14px; text-align:center; text-decoration:none; text-transform:uppercase;">
+              <i class="fa fa-times" style="margin-right:8px;"></i>Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- INFO BOX -->
+      <div style="background:#E3F2FD; border-left:4px solid #2196F3; padding:20px; border-radius:4px; margin-top:20px;">
+        <p style="color:#0D47A1; font-size:13px; margin:0;">
+          <i class="fa fa-info-circle" style="margin-right:8px;"></i>
+          <strong>Tip:</strong> Make sure your address is complete and accurate to ensure timely delivery of your orders.
+        </p>
+      </div>
+
     </div>
-
-    <div class="form-group">
-      <label>Phone</label>
-      <input type="text" name="phone" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-      <label>Address Line 1</label>
-      <input type="text" name="address_line_1" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-      <label>Address Line 2</label>
-      <input type="text" name="address_line_2" class="form-control">
-    </div>
-
-    <div class="form-group">
-      <label>City</label>
-      <input type="text" name="city" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-      <label>District</label>
-      <input type="text" name="district" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-      <label>State</label>
-      <input type="text" name="state" class="form-control" required>
-    </div>
-
-    <div class="form-group">
-      <label>Pincode</label>
-      <input type="text" name="pincode" class="form-control" required>
-    </div>
-
-    <button type="submit" class="primary-btn mt-3">
-      Save Address
-    </button>
-  </form>
+  </div>
 </div>
 {% endblock %}

@@ -353,6 +353,8 @@ textarea.input {
   right: 0px;
 }
 
+
+
 /*----------------------------*\
 	Breadcrumb
 \*----------------------------*/
@@ -756,6 +758,17 @@ textarea.input {
   width: 100%;
   -webkit-transition: 0.2s all;
   transition: 0.2s all;
+}
+
+.shop-img {
+    height: 240px;
+    overflow: hidden;
+}
+
+.shop-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .shop:hover .shop-img>img {
@@ -1201,6 +1214,8 @@ textarea.input {
 .products-slick-nav .slick-prev:before, .products-slick-nav .slick-next:before {
   font-size: 14px;
 }
+
+
 
 /*=========================================================
 	07 -> PRODUCTS PAGE
@@ -2258,4 +2273,288 @@ textarea.input {
   font-size: 18px;
 }
 
+.coupon-card {
+    border: 1px solid #e5e5e5;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
 
+.coupon-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.coupon-code {
+    font-size: 12px;
+    color: #777;
+}
+
+.coupon-apply-btn {
+    background: none;
+    border: none;
+    color: #2ecc71;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.coupon-remove-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+.manual-coupon-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.manual-coupon-wrapper .form-control {
+    height: 45px;
+    border-radius: 4px;
+}
+
+.manual-coupon-wrapper .primary-btn {
+    height: 45px;
+    padding: 0 25px;
+}
+
+.address-card {
+    display: block;
+    border: 1px solid #e5e5e5;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.address-card:hover {
+    border-color: #D10024;
+}
+
+.address-card input[type="radio"] {
+    margin-right: 10px;
+}
+
+.address-content {
+    margin-top: 5px;
+}
+
+.address-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.address-text {
+    font-size: 13px;
+    color: #666;
+}
+
+.address-edit-link {
+    font-size: 12px;
+    display: inline-block;
+    margin-top: 6px;
+}
+
+/* Top_Header */
+
+.account-menu {
+  position: relative;
+  cursor: pointer;
+}
+
+.account-name {
+  color: #fff;
+  display: inline-block;
+  padding: 5px 10px;
+}
+
+.account-name::after {
+  content: " ▼";
+  font-size: 10px;
+}
+
+
+.account-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;   
+  right: 0;
+  background: #222;
+  min-width: 160px;
+  padding: 8px 0;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+
+.account-menu:hover .account-dropdown,
+.account-dropdown:hover {
+  display: block;
+}
+
+
+.account-dropdown a,
+.account-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  color: #fff;
+  text-align: left;
+  background: none;
+  border: none;
+  text-decoration: none;
+}
+
+.account-dropdown a:hover,
+.account-dropdown button:hover {
+  background: #333;
+}
+/* Banner_Section */
+
+.hero-banner {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+}
+
+
+.hero-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-caption {
+    position: absolute;
+    top: 50%;
+    right: 80px;              
+    transform: translateY(-50%);
+    text-align: right;        
+    color: white;
+    z-index: 2;
+    max-width: 400px;
+}
+.hero-caption .primary-btn {
+    margin-top: 15px;
+}
+
+.hero-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3); 
+}
+
+.hero-caption h2,
+.hero-caption p {
+    color: white;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+
+/* LIGHT MODE */
+.hero-banner.light {
+    background: #f5f5f5;
+    color: #000;
+}
+
+/* DARK MODE */
+.hero-banner.dark {
+    background: #0f172a;
+}
+
+.hero-banner.dark h2 {
+    color: #fff;
+}
+
+.hero-banner.dark p {
+    color: #cbd5e1;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* REGISTER / LOGIN CARD */
+.auth-card {
+  max-width: 420px;
+  margin: auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* TITLE */
+.auth-card h3 {
+  font-weight: 600;
+  color: #2B2D42;
+}
+
+/* LABELS */
+.auth-card label {
+  font-weight: 500;
+  color: #2B2D42;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* INPUT FIELDS */
+.auth-card input {
+  width: 100%;
+  height: 45px;
+  border: 1px solid #E4E7ED;
+  border-radius: 4px;
+  padding: 0 12px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+/* INPUT FOCUS */
+.auth-card input:focus {
+  border-color: #D10024;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(209, 0, 36, 0.1);
+}
+
+/* BUTTON */
+.auth-card .primary-btn {
+  height: 45px;
+  font-weight: 600;
+  border-radius: 25px;
+}
+
+/* ERROR ALERT */
+.auth-card .alert {
+  font-size: 14px;
+  padding: 10px;
+}
+
+/* LINK TEXT */
+.auth-card p {
+  font-size: 14px;
+}
+
+.auth-card a {
+  color: #D10024;
+  font-weight: 500;
+}
+
+.auth-card a:hover {
+  text-decoration: underline;
+}

@@ -1,6 +1,6 @@
 from django import forms
 from products.models import Product
-from products.models import Category
+from products.models import Category,HeroBanner
 from orders.models import Coupon
 
 class ProductForm(forms.ModelForm):
@@ -14,6 +14,7 @@ class ProductForm(forms.ModelForm):
             "stock",
             "image",
             "is_active",
+            "is_featured",
         ]
 
         widgets = {
@@ -27,18 +28,20 @@ class ProductForm(forms.ModelForm):
             "stock": forms.NumberInput(attrs={"class": "form-control"}),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(attrs={}),
+            "is_featured": forms.CheckboxInput(attrs={}),
         }
         
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ["name", "is_active"]
+        fields = ["name", "is_active","image","is_featured"]
 
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "is_active": forms.CheckboxInput(),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "is_featured": forms.CheckboxInput(),
         }
-
 
 
 class CouponForm(forms.ModelForm):
@@ -66,3 +69,17 @@ class CouponForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["expiry_date"].required = False
+        
+        
+
+class HeroBannerForm(forms.ModelForm):
+    class Meta:
+        model = HeroBanner
+        fields = [
+            'title',
+            'subtitle',
+            'image',
+            'is_active',
+            'theme',
+            'product',     
+        ]

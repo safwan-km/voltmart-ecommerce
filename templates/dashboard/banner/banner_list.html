@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<h2>Hero Banners</h2>
+
+<a href="{% url 'dashboard:banner_create' %}" class="btn btn-primary">Add Banner</a>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Image</th>
+<th>Title</th>
+<th>Status</th>
+<th>Created</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for banner in banners %}
+
+<tr>
+
+<td>
+<img src="{{ banner.image.url }}" width="120">
+</td>
+
+<td>{{ banner.title }}</td>
+
+<td>
+{% if banner.is_active %}
+<span class="label label-success">Active</span>
+{% else %}
+<span class="label label-default">Inactive</span>
+{% endif %}
+</td>
+
+<td>{{ banner.created_at }}</td>
+
+<td>
+
+<a href="{% url 'dashboard:banner_edit' banner.id %}"
+class="btn btn-sm btn-warning">
+Edit
+</a>
+
+<a href="{% url 'dashboard:banner_delete' banner.id %}"
+class="btn btn-sm btn-danger">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.shortcuts import render,redirect
 
 from django.contrib.auth.decorators import login_required
@@ -7,60 +9,158 @@ from django.contrib import messages
 
 
 from cart.utils import get_or_create_user_cart
-from .models import Order, OrderItem, Address
+from .models import Coupon, CouponUsage, Order, OrderItem, Address
+from cart.services import calculate_cart_totals
+from orders.services import validate_coupon
 
 # Create your views here.
+
+from products.models import Product
 
 @login_required
 def checkout(request):
     user = request.user
-    cart = get_or_create_user_cart(user)
-    cart_items = cart.items.all()
-    
-    print("CART:", cart)
-    print("CART ITEMS COUNT:", cart_items.count())
 
+    is_buy_now = request.GET.get('buy_now') == 'true' or request.POST.get('is_buy_now') == 'true'
 
-    if not cart_items.exists():
-        return redirect('cart_page')
+    if is_buy_now:
+        buy_now_product_id = request.session.get('buy_now_product_id')
+        if not buy_now_product_id:
+            return redirect('cart_page')
+        
+        product = get_object_or_404(Product, id=buy_now_product_id)
+        
+        class MockCartItem:
+            def __init__(self, product):
+                self.product = product
+                self.quantity = 1
+                
+        cart_items = [MockCartItem(product)]
+        subtotal = product.price
+    else:
+        cart_items, subtotal = calculate_cart_totals(user)
+
+        if not cart_items:
+            return redirect('cart_page')
 
     addresses = Address.objects.filter(user=user)
+    available_coupons = Coupon.objects.filter(is_active=True)
 
-    total_amount = sum(
-        item.product.price * item.quantity for item in cart_items
-    )
+    discount_amount = 0
+    applied_coupon = None
 
-    if request.method == 'POST':
-        address_id = request.POST.get('address_id')
-        address = get_object_or_404(Address, id=address_id, user=user)
+    # Revalidate session coupon
+    coupon_id = request.session.get("applied_coupon_id")
+    if coupon_id:
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+            applied_coupon, discount_amount = validate_coupon(
+                coupon.code, user, subtotal
+            )
+        except:
+            request.session.pop("applied_coupon_id", None)
 
-        payment_method = request.POST.get('payment_method', 'COD')
+    from django.urls import reverse
+    redirect_url = reverse("checkout") + "?buy_now=true" if is_buy_now else "checkout"
 
-        order = Order.objects.create(
-            user=user,
-            address=address,
-            total_amount=total_amount,
-            payment_method=payment_method,
-            status='PENDING'
-        )
+    if request.method == "POST":
 
+        # ---------------- REMOVE COUPON ----------------
+        if "remove_coupon" in request.POST:
+            request.session.pop("applied_coupon_id", None)
+            return redirect(redirect_url)
 
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                price=item.product.price,
-                quantity=item.quantity
+        # ---------------- APPLY COUPON ----------------
+        if "apply_coupon" in request.POST:
+            code = request.POST.get("apply_coupon")
+
+        elif "apply_coupon_manual" in request.POST:
+            code = request.POST.get("coupon_code")
+
+        else:
+            code = None
+
+        if code:
+            try:
+                coupon, discount_amount = validate_coupon(code, user, subtotal)
+                request.session["applied_coupon_id"] = coupon.id
+                applied_coupon = coupon
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect(redirect_url)
+
+        # ---------------- PLACE ORDER ----------------
+        if "place_order" in request.POST:
+            address_id = request.POST.get('address_id')
+            address = get_object_or_404(Address, id=address_id, user=user)
+            payment_method = request.POST.get('payment_method', 'COD')
+
+            # Revalidate again before order creation
+            discount_amount = 0
+            applied_coupon = None
+
+            coupon_id = request.session.get("applied_coupon_id")
+            if coupon_id:
+                try:
+                    coupon = Coupon.objects.get(id=coupon_id)
+                    applied_coupon, discount_amount = validate_coupon(
+                        coupon.code, user, subtotal
+                    )
+                except:
+                    request.session.pop("applied_coupon_id", None)
+
+            final_amount = subtotal - discount_amount
+
+            order = Order.objects.create(
+                user=user,
+                address=address,
+                payment_method=payment_method,
+                original_amount=subtotal,
+                discount_amount=discount_amount,
+                final_amount=final_amount,
+                applied_coupon=applied_coupon,
+                status='PENDING'
             )
 
-        cart.items.all().delete()  # clear cart after order
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    price=item.product.price,
+                    quantity=item.quantity
+                )
 
-        return redirect('order_success', order_id=order.id)
+            # Update usage
+            if applied_coupon:
+                usage, created = CouponUsage.objects.get_or_create(
+                    user=user,
+                    coupon=applied_coupon
+                )
+                usage.usage_count += 1
+                usage.save()
+
+            if not is_buy_now:
+                user.cart.items.all().delete()
+            else:
+                request.session.pop("buy_now_product_id", None)
+                
+            request.session.pop("applied_coupon_id", None)
+
+            return redirect('order_success', order_id=order.id)
+
+        return redirect(redirect_url)
+
+    final_amount = subtotal - discount_amount
 
     return render(request, 'checkout.html', {
         'cart_items': cart_items,
         'addresses': addresses,
-        'total_amount': total_amount,
+        'subtotal': subtotal,
+        'discount_amount': discount_amount,
+        'final_amount': final_amount,
+        'applied_coupon': applied_coupon,
+        'available_coupons': available_coupons,
+        'is_buy_now': is_buy_now,
     })
 
 

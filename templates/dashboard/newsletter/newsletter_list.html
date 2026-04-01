@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<h2>Newsletter Subscribers</h2>
+
+<div style="margin-bottom:15px;">
+    <a href="{% url 'dashboard:newsletter_export' %}" class="btn btn-success">
+        Export CSV
+    </a>
+</div>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Email</th>
+<th>Subscribed At</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for sub in subscribers %}
+
+<tr>
+<td>{{ sub.email }}</td>
+<td>{{ sub.created_at }}</td>
+
+<td>
+<a href="{% url 'dashboard:newsletter_delete' sub.id %}"
+   class="btn btn-danger btn-sm"
+   onclick="return confirm('Delete this subscriber?')">
+   Delete
+</a>
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="3">No subscribers yet</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

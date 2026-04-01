@@ -1,0 +1,57 @@
+<div class="product">
+
+    <div class="product-img">
+        <img src="{{ product.image.url }}" alt="">
+
+        {% if now|date:"U"|add:"-604800" < product.created_at|date:"U" %}
+        <div class="product-label">
+            <span class="new">NEW</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="product-body">
+
+        <p class="product-category">{{ product.category.name }}</p>
+
+        <h3 class="product-name">
+            <a href="{% url 'product_detail' product.slug %}">
+                {{ product.name }}
+            </a>
+        </h3>
+
+        <h4 class="product-price">₹ {{ product.price }}</h4>
+
+        <!-- Wishlist -->
+        <div class="product-btns">
+            <button class="add-to-wishlist" data-product-id="{{ product.id }}">
+                {% if product.id in user_wishlist %}
+                    <i class="fa fa-heart"></i>
+                {% else %}
+                    <i class="fa fa-heart-o"></i>
+                {% endif %}
+                <span class="tooltipp">add to wishlist</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="add-to-cart">
+
+        <!-- Add to Cart -->
+        <a href="#" class="add-to-cart-btn js-add-to-cart"
+           data-product-id="{{ product.id }}">
+            <i class="fa fa-shopping-cart"></i> Add to Cart
+        </a>
+
+        <!-- Buy Now -->
+        <a href="{% url 'buy_now' product.id %}"
+           class="add-to-cart-btn"
+           style="background:#2ecc71; margin-top:10px;">
+            Buy Now
+        </a>
+
+    </div>
+
+</div>

@@ -2,41 +2,95 @@
 
 {% block title %}My Orders{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-  <h3>My Orders</h3>
+{% block breadcrumb %}
+  {% with breadcrumb_title='My Orders' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
 
-  {% if orders %}
-    <table class="table table-bordered mt-3">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Payment</th>
-          <th>Status</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for order in orders %}
-          <tr>
-            <td>#{{ order.id }}</td>
-            <td>{{ order.created_at|date:"d M Y" }}</td>
-            <td>₹{{ order.total_amount }}</td>
-            <td>{{ order.payment_method }}</td>
-            <td>{{ order.status }}</td>
-            <td>
-              <a href="{% url 'order_detail' order.id %}">
-                View
+{% block breadcrumb_items %}
+  <li><a href="{% url 'profile' %}">My Account</a></li>
+  <li class="active">My Orders</li>
+{% endblock %}
+
+{% block content %}
+<div style="background:#f5f5f5; padding:50px 0;">
+  <div class="container">
+
+    <!-- PAGE HEADER -->
+    <div style="background:#fff; padding:30px; border-radius:6px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <div style="display:flex; align-items:center; margin-bottom:0;">
+        <div style="width:60px; height:60px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:20px;">
+          <i class="fa fa-shopping-bag" style="font-size:28px; color:#D10024;"></i>
+        </div>
+        <div>
+          <h3 style="color:#2B2D42; margin:0; font-weight:600;">My Orders</h3>
+          <p style="color:#8D99AE; font-size:14px; margin:5px 0 0 0;">Track and manage all your past orders</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+          {% if orders %}
+            <div class="table-responsive">
+              <table class="table table-hover" style="margin-bottom:0;">
+                <thead style="background:#f8f9fa;">
+                  <tr>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Order ID</th>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Date</th>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Total</th>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Payment</th>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Status</th>
+                    <th style="border-top:none; font-weight:600; color:#2B2D42; padding:15px 8px;">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order in orders %}
+                    <tr style="border-bottom:1px solid #E4E7ED; transition:background 0.2s ease;">
+                      <td style="padding:15px 8px; color:#2B2D42; font-weight:500;">#{{ order.id }}</td>
+                      <td style="padding:15px 8px; color:#333;">{{ order.created_at|date:"d M Y" }}</td>
+                      <td style="padding:15px 8px; color:#D10024; font-weight:600; font-size:16px;">₹{{ order.final_amount }}</td>
+                      <td style="padding:15px 8px; color:#333;">{{ order.payment_method }}</td>
+                      <td style="padding:15px 8px;">
+                        <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Processing' %}badge-warning{% else %}badge-secondary{% endif %}"
+                              style="font-size:12px; padding:6px 10px;">
+                          {{ order.status }}
+                        </span>
+                      </td>
+                      <td style="padding:15px 8px;">
+                        <a href="{% url 'order_detail' order.id %}"
+                           style="display:inline-block; padding:8px 16px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:12px; text-transform:uppercase; transition:background 0.3s ease;">
+                          <i class="fa fa-eye" style="margin-right:5px;"></i>View
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <!-- Empty State -->
+            <div style="text-align:center; padding:60px 30px;">
+              <div style="width:80px; height:80px; background:#f8f9fa; border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center;">
+                <i class="fa fa-shopping-cart" style="font-size:35px; color:#E4E7ED;"></i>
+              </div>
+              <h4 style="color:#2B2D42; margin-bottom:15px; font-weight:600;">No Orders Yet</h4>
+              <p style="color:#8D99AE; font-size:15px; margin-bottom:25px; line-height:1.6;">
+                You haven't placed any orders yet. Start shopping to see your order history here.
+              </p>
+              <a href="{% url 'store' %}"
+                 style="display:inline-block; padding:13px 25px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase;">
+                <i class="fa fa-shopping-bag" style="margin-right:8px;"></i>Start Shopping
               </a>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>You have not placed any orders yet.</p>
-  {% endif %}
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

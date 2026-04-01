@@ -33,6 +33,12 @@
         <tr>
             <td>{{ category.name }}</td>
             <td>{{ category.product_count }}</td>
+            
+            <td>
+                {% if category.is_featured %}
+                    <span class="label label-info">Featured</span>
+                {% endif %}
+            </td>
             <td>
                 {% if category.is_active %}
                     <span class="label label-success">Active</span>
@@ -71,6 +77,13 @@
                     </button>
                 </form>
             </td>
+            <td>
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}"
+                            style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                        No Image
+                    {% endif %}
         </tr>
         {% empty %}
         <tr>

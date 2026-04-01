@@ -1,5 +1,5 @@
 from orders.models import Order,OrderItem,CouponUsage
-from products.models import Product, Category
+from products.models import Product, Category,NewsletterSubscriber
 from django.contrib.auth.models import User
 from django.db.models import Sum,Q,Count,F
 
@@ -33,7 +33,7 @@ class DashboardHomeView(View):
         revenue = Order.objects.filter(
             status="PAID"
         ).aggregate(
-            total=Sum("total_amount")
+            total=Sum("final_amount")
         )["total"] or 0
 
         context = {
@@ -90,9 +90,9 @@ class OrderListView(View):
         if sort == "oldest":
             orders = orders.order_by("created_at")
         elif sort == "highest":
-            orders = orders.order_by("-total_amount")
+            orders = orders.order_by("-final_amount")
         elif sort == "lowest":
-            orders = orders.order_by("total_amount")
+            orders = orders.order_by("final_amount")
         else:
             orders = orders.order_by("-created_at")  # default newest
 
@@ -413,7 +413,7 @@ class ReportsView(View):
 
         # Revenue
         total_revenue = orders.aggregate(
-            total=Sum("total_amount")
+            total=Sum("final_amount")
         )["total"] or 0
 
         total_orders = orders.count()
@@ -459,4 +459,90 @@ class ReportsView(View):
         }
 
         return render(request, "dashboard/reports.html", context)
+    
 
+
+from django.shortcuts import render, redirect
+from products.models import HeroBanner
+from .forms import HeroBannerForm
+
+
+def banner_list(request):
+    banners = HeroBanner.objects.all()
+    return render(request, "dashboard/banner/banner_list.html", {"banners": banners})
+
+
+def banner_create(request):
+
+    if request.method == "POST":
+        form = HeroBannerForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            return redirect("dashboard:banner_list")
+
+    else:
+        form = HeroBannerForm()
+
+    return render(request, "dashboard/banner/banner_form.html", {"form": form})
+
+def banner_edit(request, pk):
+
+    banner = HeroBanner.objects.get(id=pk)
+
+    if request.method == "POST":
+
+        form = HeroBannerForm(request.POST, request.FILES, instance=banner)
+
+        if form.is_valid():
+            form.save()
+            return redirect("dashboard:banner_list")
+
+    else:
+        form = HeroBannerForm(instance=banner)
+
+    return render(request,"dashboard/banner/banner_form.html",{"form":form})
+
+def banner_delete(request, pk):
+
+    banner = HeroBanner.objects.get(id=pk)
+    banner.delete()
+
+    return redirect("dashboard:banner_list")
+
+
+
+def newsletter_list(request):
+    subscribers = NewsletterSubscriber.objects.all().order_by("-created_at")
+
+    return render(
+        request,
+        "dashboard/newsletter/newsletter_list.html",
+        {"subscribers": subscribers}
+    )
+    
+    
+import csv
+from django.http import HttpResponse
+
+def export_newsletter(request):
+
+    subscribers = NewsletterSubscriber.objects.all()
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="newsletter_subscribers.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Email", "Subscribed At"])
+
+    for sub in subscribers:
+        writer.writerow([sub.email, sub.created_at])
+
+    return response
+
+def newsletter_delete(request, pk):
+
+    subscriber = NewsletterSubscriber.objects.get(id=pk)
+    subscriber.delete()
+
+    return redirect("dashboard:newsletter_list")

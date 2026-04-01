@@ -1,0 +1,48 @@
+<div class="cart-list">
+
+{% for item in cart_items %}
+
+<div class="product-widget">
+
+  <div class="product-img">
+    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+  </div>
+
+  <div class="product-body">
+    <h3 class="product-name">
+      <a href="{% url 'product_detail' item.product.slug %}">
+        {{ item.product.name }}
+      </a>
+    </h3>
+
+    <h4 class="product-price">
+      <span class="qty">{{ item.quantity }}x</span>
+      ₹{{ item.product.price }}
+    </h4>
+  </div>
+
+  <a href="{% url 'remove_from_cart' item.product.id %}" class="delete">
+    <i class="fa fa-close"></i>
+  </a>
+
+</div>
+
+{% empty %}
+
+<p style="padding:10px;">Your cart is empty</p>
+
+{% endfor %}
+
+</div>
+
+<div class="cart-summary">
+  <small>{{ cart_count }} Item(s) selected</small>
+  <h5>SUBTOTAL: ₹{{ cart_total }}</h5>
+</div>
+
+<div class="cart-btns">
+  <a href="{% url 'cart_page' %}">View Cart</a>
+  <a href="{% url 'checkout' %}">
+    Checkout <i class="fa fa-arrow-circle-right"></i>
+  </a>
+</div>

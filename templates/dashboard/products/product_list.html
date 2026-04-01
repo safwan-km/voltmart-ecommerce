@@ -72,6 +72,14 @@
             </td>
 
             <td>
+            {% if product.is_featured %}
+            <span class="label label-success">Featured</span>
+            {% else %}
+            <span class="label label-default">Normal</span>
+            {% endif %}
+            </td>
+
+            <td>
             {% if not product.category.is_active %}
                 <span class="label label-default">Category Inactive</span>
             {% elif product.is_active %}

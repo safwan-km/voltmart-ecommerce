@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div style="background:#f5f5f5; padding:60px 0;">
+
+  <div class="container">
+    <div class="auth-card">
+
+      <h3 class="text-center mb-4">Register</h3>
+
+      <form method="post" id="register-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+              <p style="margin:0;">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label>Username</label>
+          {{ form.username }}
+          {% for error in form.username.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Email</label>
+          {{ form.email }}
+          {% for error in form.email.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Password</label>
+          <div style="position:relative;">
+            {{ form.password1 }}
+            <button type="button" class="toggle-password" data-target="#id_password1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#6c757d; cursor:pointer;">Show</button>
+          </div>
+          {% for error in form.password1.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Confirm Password</label>
+          <div style="position:relative;">
+            {{ form.password2 }}
+            <button type="button" class="toggle-password" data-target="#id_password2" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#6c757d; cursor:pointer;">Show</button>
+          </div>
+          {% for error in form.password2.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="primary-btn mt-4" style="width:100%;">
+          Register
+        </button>
+
+        <p class="text-center mt-3">
+          Already have an account?
+          <a href="{% url 'login' %}">Login</a>
+        </p>
+
+      </form>
+
+      <script>
+        document.querySelectorAll('.toggle-password').forEach(function(button) {
+          button.addEventListener('click', function() {
+            var target = document.querySelector(this.getAttribute('data-target'));
+            if (!target) return;
+            if (target.type === 'password') {
+              target.type = 'text';
+              this.textContent = 'Hide';
+            } else {
+              target.type = 'password';
+              this.textContent = 'Show';
+            }
+          });
+        });
+      </script>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

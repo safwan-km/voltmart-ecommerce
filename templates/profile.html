@@ -1,27 +1,119 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}My Profile{% endblock %}
+{% block title %}My Account{% endblock %}
+
+{% block breadcrumb %}
+  {% with breadcrumb_title='My Account' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="active">My Account</li>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h3>My Profile</h3>
+<div style="background:#f5f5f5; padding:50px 0;">
+  <div class="container">
 
-  <p><strong>Username:</strong> {{ request.user.username }}</p>
-  <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <!-- PAGE TITLE -->
+    <h3 style="margin-bottom:30px; color:#2B2D42; font-weight:600;">My Account</h3>
 
-  <hr>
+    <div class="row">
 
-  <ul>
-    <li><a href="{% url 'address_list' %}">My Addresses</a></li>
-    <li>
-      <a href="{% url 'order_history' %}">My Orders</a>
-    </li>
-    <form method="post" action="{% url 'logout' %}">
-  {% csrf_token %}
-  <button type="submit" style="background:none;border:none;padding:0;color:#337ab7;">
-    Logout
-  </button>
-</form>
-  </ul>
+      <!-- LEFT: USER PROFILE CARD -->
+      <div class="col-md-4">
+        <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:20px;">
+          <div style="text-align:center; margin-bottom:25px;">
+            <div style="width:80px; height:80px; background:#D10024; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center;">
+              <i class="fa fa-user" style="font-size:40px; color:#fff;"></i>
+            </div>
+            <h5 style="color:#2B2D42; margin:0; font-weight:600;">{{ request.user.username }}</h5>
+            <p style="color:#8D99AE; font-size:13px; margin-top:5px;">{{ request.user.email }}</p>
+          </div>
+
+          <hr style="margin:20px 0; border:none; border-top:1px solid #E4E7ED;">
+
+          <div style="margin-bottom:20px;">
+            <p style="font-size:13px; color:#8D99AE; margin-bottom:8px;">USERNAME</p>
+            <p style="color:#2B2D42; font-weight:500; margin:0;">{{ request.user.username }}</p>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <p style="font-size:13px; color:#8D99AE; margin-bottom:8px;">EMAIL ADDRESS</p>
+            <p style="color:#2B2D42; font-weight:500; margin:0;">{{ request.user.email }}</p>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <p style="font-size:13px; color:#8D99AE; margin-bottom:8px;">MEMBER SINCE</p>
+            <p style="color:#2B2D42; font-weight:500; margin:0;">{{ request.user.date_joined|date:"d M Y" }}</p>
+          </div>
+
+          <hr style="margin:20px 0; border:none; border-top:1px solid #E4E7ED;">
+
+          <a href="{% url 'edit_profile' %}"
+             style="display:block; text-align:center; padding:12px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; margin-bottom:10px; font-size:14px;">
+            <i class="fa fa-edit"></i> Edit Profile
+          </a>
+
+          <a href="{% url 'change_password' %}"
+             style="display:block; text-align:center; padding:12px; background:#f8f9fa; color:#2B2D42; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; border:1px solid #E4E7ED;">
+            <i class="fa fa-lock"></i> Change Password
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: ACCOUNT ACTIONS -->
+      <div class="col-md-8">
+        <div style="background:#fff; padding:30px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:20px;">
+          <h5 style="color:#2B2D42; margin-bottom:25px; font-weight:600;">Account Management</h5>
+
+          <div class="row">
+            <!-- My Addresses -->
+            <div class="col-md-6 mb-4">
+              <div style="background:#f8f9fa; padding:20px; border-radius:6px; border-left:4px solid #D10024; height:100%; display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; margin-bottom:15px;">
+                  <div style="width:50px; height:50px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:15px;">
+                    <i class="fa fa-map-marker" style="font-size:24px; color:#D10024;"></i>
+                  </div>
+                  <div>
+                    <h6 style="color:#2B2D42; margin:0; font-weight:600; font-size:16px;">My Addresses</h6>
+                    <p style="color:#8D99AE; font-size:12px; margin:0;">Manage shipping addresses</p>
+                  </div>
+                </div>
+                <p style="color:#666; font-size:13px; flex-grow:1; margin-bottom:15px;">Update and manage all your saved delivery addresses for faster checkout.</p>
+                <a href="{% url 'address_list' %}"
+                   style="display:inline-block; padding:10px 16px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px; text-align:center;">
+                  View Addresses
+                </a>
+              </div>
+            </div>
+
+            <!-- My Orders -->
+            <div class="col-md-6 mb-4">
+              <div style="background:#f8f9fa; padding:20px; border-radius:6px; border-left:4px solid #D10024; height:100%; display:flex; flex-direction:column;">
+                <div style="display:flex; align-items:center; margin-bottom:15px;">
+                  <div style="width:50px; height:50px; background:#FFE5E5; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:15px;">
+                    <i class="fa fa-shopping-bag" style="font-size:24px; color:#D10024;"></i>
+                  </div>
+                  <div>
+                    <h6 style="color:#2B2D42; margin:0; font-weight:600; font-size:16px;">My Orders</h6>
+                    <p style="color:#8D99AE; font-size:12px; margin:0;">Track and manage orders</p>
+                  </div>
+                </div>
+                <p style="color:#666; font-size:13px; flex-grow:1; margin-bottom:15px;">View order history, track shipments, and download invoices from all your past purchases.</p>
+                <a href="{% url 'order_history' %}"
+                   style="display:inline-block; padding:10px 16px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:13px; text-align:center;">
+                  View Orders
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}

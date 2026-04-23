@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Email Verification Sent{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="container text-center" style="padding: 100px 0;">
+        <h2 style="margin-bottom: 20px;">Thank You For Registering!</h2>
+        <p style="font-size: 16px;">An activation link has been sent to your email address. Please click on the link to verify your account.</p>
+        <p style="font-size: 14px; color: #8D99AE;">If you don't see it, be sure to check your spam or junk folder.</p>
+        <a href="{% url 'login' %}" class="primary-btn" style="margin-top: 30px;">Return to Login</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pay with Razorpay</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .razorpay-payment-wrapper {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .razorpay-payment-card {
+            max-width: 520px;
+            width: 100%;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.08);
+            padding: 36px;
+            text-align: center;
+        }
+        .razorpay-payment-card h1 {
+            margin: 0 0 14px;
+            font-size: 28px;
+            color: #2B2D42;
+        }
+        .razorpay-payment-card p {
+            margin: 8px 0;
+            color: #5e6472;
+            line-height: 1.6;
+        }
+        .razorpay-payment-card .amount {
+            display: block;
+            margin: 24px 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #D10024;
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+        #pay-btn {
+            border: none;
+            background: #D10024;
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        #pay-btn:hover {
+            background: #b2001f;
+        }
+        .cancel-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 32px;
+            background: transparent;
+            color: #2B2D42;
+            border: 1px solid #E4E7ED;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .cancel-btn:hover {
+            background: #f5f5f5;
+            border-color: #D10024;
+        }
+        .demo-section {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        .demo-hint {
+            font-size: 12px;
+            color: #aaa;
+            margin: 0 0 12px;
+            letter-spacing: 0.2px;
+        }
+        .demo-btn {
+            border: none;
+            background: #2B2D42;
+            color: #fff;
+            padding: 10px 28px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            letter-spacing: 0.4px;
+        }
+        .demo-btn:hover {
+            background: #1a1b2e;
+        }
+    </style>
+</head>
+<body>
+
+{% csrf_token %}
+<div class="razorpay-payment-wrapper">
+    <div class="razorpay-payment-card">
+        <h1>Complete Your Payment</h1>
+        <p>Order #{{ order.id }}</p>
+        <span class="amount">₹{{ order.final_amount }}</span>
+        <div class="button-row">
+            <button id="pay-btn">Pay Now</button>
+            <form method="post" action="{% url 'cancel_order' order.id %}" style="margin:0;" id="cancel-form">
+                {% csrf_token %}
+                <button type="button" class="cancel-btn" onclick="confirmCancel()">Cancel Order</button>
+            </form>
+        </div>
+
+        <!-- Demo Mode -->
+        <div class="demo-section">
+            <form method="get" action="{% url 'simulate_payment' order.id %}">
+                <button type="submit" class="demo-btn">Simulate Payment</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": {{ amount }},
+    "currency": "INR",
+    "name": "VoltMart",
+    "description": "Order Payment",
+    "order_id": "{{ razorpay_order_id }}",
+    "handler": function (response){
+        fetch("{% url 'payment_success' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                order_id: {{ order.id }},
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        })
+        .then(function(res){
+            return res.json();
+        })
+        .then(function(data){
+            if (data.status === 'ok') {
+                window.location.href = "{% url 'order_success' order.id %}";
+            } else {
+                alert('Payment verification failed. ' + (data.error || 'Please try again.'));
+            }
+        })
+        .catch(function(error){
+            console.error("Fetch error:", error);
+            alert('Unable to complete payment. Please refresh and try again.');
+        });
+    },
+    "modal": {
+        "ondismiss": function(){
+        }
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById('pay-btn').onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+};
+
+rzp.on('payment.failed', function(response){
+    alert('Payment failed: ' + (response.error.description || 'Please try another payment method.'));
+});
+
+function confirmCancel() {
+    if (confirm('Are you sure you want to cancel this order? Your items will be restored to your cart.')) {
+        document.getElementById('cancel-form').submit();
+    }
+}
+</script>
+
+</body>
+</html>

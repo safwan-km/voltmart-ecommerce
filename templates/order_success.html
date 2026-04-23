@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Order Success{% endblock %}
+
+{% block breadcrumb %}
+  {% with breadcrumb_title='Order Placed' %}
+    {{ block.super }}
+  {% endwith %}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="active">Success</li>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="container">
+    <div class="order-success">
+      <h2>Order Placed Successfully</h2>
+      <div class="order-details">
+        <p><strong>Order ID:</strong> {{ order.id }}</p>
+        <p><strong>Total Amount:</strong> {{ order.final_amount }}</p>
+        <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+        <p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
+        <p><strong>Order Status:</strong> {{ order.order_status }}</p>
+        {% if order.payment_method == "COD" %}
+          <p class="payment-note">Pay on delivery</p>
+        {% else %}
+          <p class="payment-note">Payment completed</p>
+        {% endif %}
+      </div>
+      <a href="{% url 'home' %}" class="primary-btn">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

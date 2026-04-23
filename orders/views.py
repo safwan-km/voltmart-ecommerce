@@ -4,14 +4,20 @@ from django.shortcuts import render,redirect
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+import json
 from django.http import JsonResponse
 from django.contrib import messages
 
 
 from cart.utils import get_or_create_user_cart
+from cart.models import CartItem
+from payments.models import Payment
 from .models import Coupon, CouponUsage, Order, OrderItem, Address
 from cart.services import calculate_cart_totals
 from orders.services import validate_coupon
+import razorpay
+from django.conf import settings
+
 
 # Create your views here.
 
@@ -111,6 +117,7 @@ def checkout(request):
 
             final_amount = subtotal - discount_amount
 
+            order_status = 'CONFIRMED' if payment_method == 'COD' else 'PENDING'
             order = Order.objects.create(
                 user=user,
                 address=address,
@@ -119,7 +126,35 @@ def checkout(request):
                 discount_amount=discount_amount,
                 final_amount=final_amount,
                 applied_coupon=applied_coupon,
-                status='PENDING'
+                order_status=order_status,
+                payment_status='PENDING'
+            )
+
+            if payment_method == 'COD':
+                payment_status = 'PENDING'
+                razorpay_order_id = None
+
+            elif payment_method == 'UPI':
+                client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+                razorpay_order = client.order.create({
+                    "amount": int(final_amount * 100),
+                    "currency": "INR",
+                    "payment_capture": 1
+                })
+
+                razorpay_order_id = razorpay_order['id']
+                payment_status = 'PENDING'
+
+            else:
+                payment_status = 'PENDING'
+                razorpay_order_id = None
+
+            Payment.objects.create(
+                order=order,
+                amount=final_amount,
+                status=payment_status,
+                razorpay_order_id=razorpay_order_id
             )
 
             for item in cart_items:
@@ -130,8 +165,7 @@ def checkout(request):
                     quantity=item.quantity
                 )
 
-            # Update usage
-            if applied_coupon:
+            if payment_method == 'COD' and applied_coupon:
                 usage, created = CouponUsage.objects.get_or_create(
                     user=user,
                     coupon=applied_coupon
@@ -143,11 +177,18 @@ def checkout(request):
                 user.cart.items.all().delete()
             else:
                 request.session.pop("buy_now_product_id", None)
-                
             request.session.pop("applied_coupon_id", None)
 
-            return redirect('order_success', order_id=order.id)
-
+            if payment_method == 'UPI':
+                return render(request, 'razorpay_payment.html', {
+                    'order': order,
+                    'razorpay_order_id': razorpay_order_id,
+                    'razorpay_key': settings.RAZORPAY_KEY_ID,
+                    'amount': int(final_amount * 100),
+                })
+            else:
+                return redirect('order_success', order_id=order.id)
+            
         return redirect(redirect_url)
 
     final_amount = subtotal - discount_amount
@@ -161,6 +202,7 @@ def checkout(request):
         'applied_coupon': applied_coupon,
         'available_coupons': available_coupons,
         'is_buy_now': is_buy_now,
+        
     })
 
 
@@ -223,10 +265,7 @@ def address_list(request):
 
 @login_required
 def delete_address(request, address_id):
-    print("DELETE VIEW HIT")
-
     if request.method != 'POST':
-        print("Not POST request")
         return redirect('address_list')
 
     address = get_object_or_404(
@@ -236,14 +275,12 @@ def delete_address(request, address_id):
     )
 
     order_exists = Order.objects.filter(address=address).exists()
-    print("Order exists:", order_exists)
 
     if order_exists:
         messages.error(request, "This address is used in an order and cannot be deleted.")
         return redirect('address_list')
 
     address.delete()
-    print("Address deleted")
 
     messages.success(request, "Address deleted successfully.")
     return redirect('address_list')
@@ -275,3 +312,177 @@ def order_detail(request, order_id):
     })
 
 
+
+def order_success(request, order_id):
+    order = Order.objects.get(id=order_id, user=request.user)
+
+    return render(request, 'order_success.html', {
+        'order': order
+    })
+
+@login_required
+def cancel_order(request, order_id):
+    if request.method != 'POST':
+        return redirect('order_detail', order_id=order_id)
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Block cancel for orders that cannot be cancelled
+    if order.order_status in ('CANCELLED', 'SHIPPED', 'DELIVERED'):
+        messages.error(request, "This order cannot be cancelled.")
+        return redirect('order_detail', order_id=order_id)
+
+    # ── PAID → trigger Razorpay refund (or handle demo) ───────────────────
+    if order.payment_status == 'PAID':
+        payment = Payment.objects.filter(order=order).order_by('-created_at').first()
+
+        is_demo = payment and payment.payment_id and payment.payment_id.startswith('demo_')
+
+        if is_demo:
+            # Demo/simulated payment — no real refund needed
+            if payment:
+                payment.status = 'REFUNDED'
+                payment.save()
+            order.payment_status = 'REFUNDED'
+            refund_msg = "Your demo order has been cancelled. Items have been restored to your cart."
+
+        elif payment and payment.payment_id:
+            try:
+                client = razorpay.Client(
+                    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+                )
+                refund_amount = int(order.final_amount * 100)   # paise
+                client.payment.refund(payment.payment_id, {"amount": refund_amount})
+
+                payment.status = 'REFUNDED'
+                payment.save()
+
+                order.payment_status = 'REFUNDED'
+            except Exception as e:
+                messages.error(
+                    request,
+                    f"Refund could not be initiated: {str(e)}. Please contact support."
+                )
+                return redirect('order_detail', order_id=order_id)
+
+            refund_msg = (
+                "Your order has been cancelled and a refund of "
+                f"₹{order.final_amount} has been initiated. "
+                "It will reflect in your account within 3–5 business days."
+            )
+        else:
+            messages.error(request, "Payment record not found. Please contact support.")
+            return redirect('order_detail', order_id=order_id)
+
+    else:
+        # ── COD / PENDING → plain cancel ──────────────────────────────────
+        order.payment_status = 'FAILED'
+        refund_msg = "Your order has been cancelled. Items have been restored to your cart."
+
+    # Restore cart items
+    cart = get_or_create_user_cart(request.user)
+    for item in order.items.all():
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            product=item.product,
+            defaults={'quantity': item.quantity}
+        )
+        if not created:
+            cart_item.quantity += item.quantity
+            cart_item.save()
+
+    order.order_status = 'CANCELLED'
+    order.save()
+
+    messages.success(request, refund_msg)
+    return redirect('cart_page')
+
+    
+@login_required
+def payment_success(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    data = json.loads(request.body)
+
+    order_id = data.get("order_id")
+    razorpay_payment_id = data.get("razorpay_payment_id")
+    razorpay_order_id = data.get("razorpay_order_id")
+    razorpay_signature = data.get("razorpay_signature")
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    try:
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature,
+        }
+        client.utility.verify_payment_signature(params_dict)
+    except razorpay.errors.SignatureVerificationError as e:
+        return JsonResponse({"status": "failed", "error": "Signature verification failed."}, status=400)
+
+    payment = Payment.objects.filter(order=order).order_by('-created_at').first()
+    if payment:
+        payment.payment_id = razorpay_payment_id
+        payment.status = 'PAID'
+        payment.save()
+
+    order.payment_status = 'PAID'
+    order.order_status = 'CONFIRMED'
+    order.save()
+
+    if order.applied_coupon:
+        usage, created = CouponUsage.objects.get_or_create(
+            user=request.user,
+            coupon=order.applied_coupon
+        )
+        usage.usage_count += 1
+        usage.save()
+        request.session.pop("applied_coupon_id", None)
+
+    CartItem.objects.filter(cart__user=request.user).delete()
+    request.session.pop("buy_now_product_id", None)
+
+    return JsonResponse({"status": "ok"})
+
+
+@login_required
+def simulate_payment(request, order_id):
+    """
+    Demo/Dev only: Simulates a successful payment without going through Razorpay.
+    Used when Razorpay KYC is not completed or for portfolio demonstration.
+    """
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.order_status != 'PENDING' or order.payment_status != 'PENDING':
+        messages.error(request, "This order cannot be simulated — it is already processed.")
+        return redirect('order_detail', order_id=order.id)
+
+    # Mark payment as paid
+    payment = Payment.objects.filter(order=order).order_by('-created_at').first()
+    if payment:
+        payment.payment_id = f"demo_pay_{order.id}"
+        payment.status = 'PAID'
+        payment.save()
+
+    order.payment_status = 'PAID'
+    order.order_status = 'CONFIRMED'
+    order.save()
+
+    # Record coupon usage if applied
+    if order.applied_coupon:
+        usage, created = CouponUsage.objects.get_or_create(
+            user=request.user,
+            coupon=order.applied_coupon
+        )
+        usage.usage_count += 1
+        usage.save()
+
+    # Clear cart
+    CartItem.objects.filter(cart__user=request.user).delete()
+    request.session.pop("buy_now_product_id", None)
+
+    messages.success(request, "Demo payment successful! Order confirmed.")
+    return redirect('order_success', order_id=order.id)

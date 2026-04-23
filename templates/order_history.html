@@ -55,9 +55,9 @@
                       <td style="padding:15px 8px; color:#D10024; font-weight:600; font-size:16px;">₹{{ order.final_amount }}</td>
                       <td style="padding:15px 8px; color:#333;">{{ order.payment_method }}</td>
                       <td style="padding:15px 8px;">
-                        <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Processing' %}badge-warning{% else %}badge-secondary{% endif %}"
+                        <span class="badge {% if order.order_status == 'DELIVERED' %}badge-success{% elif order.order_status == 'SHIPPED' %}badge-info{% elif order.order_status == 'CONFIRMED' %}badge-warning{% else %}badge-secondary{% endif %}"
                               style="font-size:12px; padding:6px 10px;">
-                          {{ order.status }}
+                          {{ order.order_status }}
                         </span>
                       </td>
                       <td style="padding:15px 8px;">

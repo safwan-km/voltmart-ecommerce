@@ -25,22 +25,37 @@ class Address(models.Model):
         return f"{self.full_name} - {self.city}"
     
 class Order(models.Model):
-    STATUS_CHOICES = (
+    
+    ORDER_STATUS_CHOICES = (
         ('PENDING', 'Pending'),
-        ('PAID', 'Paid'),
-        ('FAILED', 'Failed'),
+        ('CONFIRMED', 'Confirmed'),
+        ('SHIPPED', 'Shipped'),
+        ('DELIVERED', 'Delivered'),
         ('CANCELLED', 'Cancelled'),
     )
-
+    
     PAYMENT_CHOICES = (
         ('COD', 'Cash on Delivery'),
         ('CARD', 'Card'),
         ('UPI', 'UPI'),
     )
+    
+    payment_status = models.CharField(
+        max_length=20,
+        choices=(
+            ('PENDING', 'Pending'),
+            ('PAID', 'Paid'),
+            ('FAILED', 'Failed'),
+            ('REFUNDED', 'Refunded'),
+        ),
+        default='PENDING'
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='orders'
     )
 
@@ -67,9 +82,9 @@ class Order(models.Model):
         blank=True
     )
 
-    status = models.CharField(
+    order_status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
+        choices=ORDER_STATUS_CHOICES,
         default='PENDING'
     )
 

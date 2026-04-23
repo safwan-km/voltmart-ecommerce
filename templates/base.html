@@ -86,7 +86,7 @@
           <div class="col-md-3">
             <div class="header-logo">
               <a href="/" class="logo">
-                <img src="{% static 'img/logo.png' %}" alt="" />
+                <img src="{% static 'img/VOLTMART_Logo.png' %}" alt="" />
               </a>
             </div>
           </div>
@@ -184,7 +184,33 @@
     <!-- /MAIN HEADER -->
   </header>
   <!-- /HEADER -->
-  {% block navigation %}{% endblock %}
+  <!-- NAVIGATION -->
+  <nav id="navigation">
+    <!-- container -->
+    <div class="container">
+      <!-- responsive-nav -->
+      <div id="responsive-nav">
+        <!-- NAV -->
+        <ul class="main-nav nav navbar-nav">
+          <li class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="{% if request.resolver_match.url_name == 'store' and not request.GET.category %}active{% endif %}">
+            <a href="{% url 'store' %}">Categories</a>
+          </li>
+          {% for category in navbar_categories %}
+          <li class="{% if request.GET.category == category.slug %}active{% endif %}">
+            <a href="{% url 'store' %}?category={{ category.slug }}">{{ category.name }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        <!-- /NAV -->
+      </div>
+      <!-- /responsive-nav -->
+    </div>
+    <!-- /container -->
+  </nav>
+  <!-- /NAVIGATION -->
   <!-- BREADCRUMB -->
   {% block breadcrumb %}
   {% if breadcrumb_title %}
@@ -210,6 +236,21 @@
   {% endif %}
   {% endblock %}
   <!-- /BREADCRUMB -->
+  <!-- GLOBAL MESSAGES -->
+  <div class="container" style="margin-top:20px;">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible" role="alert" style="border-radius: 4px;">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <!-- /GLOBAL MESSAGES -->
+
   <!-- SECTION -->
   {% block content %}{% endblock %}
   <!-- CART TOAST MESSAGE -->
@@ -299,7 +340,7 @@
   <li><a href="{% url 'wishlist_page' %}">Wishlist</a></li>
 
                 <li>
-                  <a href="#">Track My Order</a>
+                  <a href="{% url 'order_history' %}">Track My Order</a>
                 </li>
                 
               </ul>
@@ -361,10 +402,28 @@
   {% block extra_js %}{% endblock %}
   <script>
 
-    // ===============================
-    // NEWSLETTER SUBMIT
-    // ===============================
-    document.getElementById("newsletter-form").addEventListener("submit", function (e) {
+    function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// ===============================
+// NEWSLETTER SUBMIT (SAFE)
+// ===============================
+  const newsletterForm = document.getElementById("newsletter-form");
+
+  if (newsletterForm) {
+    newsletterForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
       const email = this.email.value;
@@ -372,7 +431,7 @@
       fetch("{% url 'subscribe_newsletter' %}", {
         method: "POST",
         headers: {
-          "X-CSRFToken": "{{ csrf_token }}",
+          "X-CSRFToken": getCookie("csrftoken"),
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: "email=" + email
@@ -381,86 +440,94 @@
         .then(data => {
 
           const message = document.getElementById("newsletter-message");
+          if (!message) return;
 
           message.innerText = data.message;
 
           if (data.success) {
             message.style.color = "green";
-            document.getElementById("newsletter-form").reset();
+            newsletterForm.reset();
           } else {
             message.style.color = "red";
           }
 
         });
-
     });
-
+  }
 
     // ===============================
-    // ADD TO CART (AJAX)
-    // ===============================
-    document.addEventListener("click", function (e) {
+// ===============================
+// ADD TO CART (AJAX)
+// ===============================
+document.addEventListener("click", function (e) {
 
-      const btn = e.target.closest(".add-to-cart-btn");
+  const btn = e.target.closest(".js-add-to-cart");
+  if (!btn) return;
 
-      if (!btn) return;
+  e.preventDefault();
 
-      const productId = btn.dataset.productId;
+  const productId = btn.dataset.productId;
 
-      if (!productId) {
-        return;
+  // ✅ get quantity (only exists in product page)
+  let quantity = 1;
+  const qtyInput = document.getElementById("qty-input");
+
+  if (qtyInput) {
+    quantity = qtyInput.value;
+  }
+
+  fetch(`/cart/add/${productId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "quantity=" + quantity
+  })
+    .then(response => response.json())
+    .then(data => {
+      
+      const message = document.getElementById("cart-message");
+
+      if (data.success) {
+
+        // update cart count badge
+        const badge = document.querySelector("#header .qty span.qty");
+        if (badge) {
+          badge.innerText = data.cart_count;
+        }
+
+        // dynmically fetch the new cart dropdown html
+        fetch("/cart/summary/")
+          .then(res => res.text())
+          .then(html => {
+             const dropdown = document.getElementById("cart-dropdown");
+             if (dropdown) dropdown.innerHTML = html;
+          });
+
+        if (message) {
+          message.innerText = "✔ Product added to cart";
+          message.style.background = "#28a745"; // Green
+          message.style.bottom = "30px";
+          setTimeout(() => { message.style.bottom = "-100px"; }, 2000);
+        }
+
+      } else {
+
+        // Show error (e.g., out of stock)
+        if (message) {
+          message.innerText = "✖ " + (data.error_msg || "Error adding product");
+          message.style.background = "#D10024"; // Red
+          message.style.bottom = "30px";
+          setTimeout(() => { message.style.bottom = "-100px"; }, 3000);
+        }
+
       }
 
-      e.preventDefault();
+    })
+    .catch(error => console.error("Cart error:", error));
 
-      fetch(`/cart/add/${productId}/`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": "{{ csrf_token }}"
-        }
-      })
-        .then(response => response.json())
-        .then(data => {
-
-          if (data.success) {
-
-            // update cart badge
-            const badge = document.querySelector("#header .qty span.qty");
-
-            if (badge) {
-              badge.innerText = data.cart_count;
-            }
-
-            // show toast
-            const message = document.getElementById("cart-message");
-
-            if (message) {
-              message.innerText = "✔ Product added to cart";
-              message.style.bottom = "30px";
-
-              setTimeout(function () {
-                message.style.bottom = "-100px";
-              }, 2000);
-            }
-
-            // reload cart dropdown
-            fetch("/cart/summary/")
-              .then(response => response.text())
-              .then(html => {
-
-                const dropdown = document.getElementById("cart-dropdown");
-
-                if (dropdown) {
-                  dropdown.innerHTML = html;
-                }
-
-              });
-
-          }
-
-        });
-
-    });
+});
 
 
     // ===============================
@@ -481,14 +548,15 @@ document.addEventListener("click", function (e) {
   fetch(`/wishlist/toggle/${productId}/`, {
     method: "POST",
     headers: {
-      "X-CSRFToken": "{{ csrf_token }}"
+      "X-CSRFToken": getCookie("csrftoken"),
+      "Content-Type": "application/json"
     }
   })
     .then(response => {
 
-      // login redirect handling
-      if (response.redirected && response.url.includes("login")) {
-        window.location.href = response.url;
+      // not logged in → redirect to login page
+      if (response.status === 401) {
+        window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
         return null;
       }
 
@@ -509,7 +577,8 @@ document.addEventListener("click", function (e) {
         icon.classList.add("fa-heart-o");
 
         // 🚨 IMPORTANT: remove card if on wishlist page
-        const productCard = btn.closest(".product");
+        const productCard = btn.closest(".col-md-4");
+
         if (productCard && window.location.pathname.includes("wishlist")) {
           productCard.remove();
         }
@@ -525,6 +594,40 @@ document.addEventListener("click", function (e) {
     .catch(error => console.error("Wishlist error:", error));
 
 });
+
+// ===============================
+// MOBILE MENU TOGGLE
+// ===============================
+(function () {
+  const toggleBtn = document.querySelector('.menu-toggle a');
+  const nav       = document.getElementById('responsive-nav');
+  if (!toggleBtn || !nav) return;
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'nav-overlay';
+  overlay.style.cssText = [
+    'display:none', 'position:fixed', 'inset:0',
+    'background:rgba(0,0,0,0.5)', 'z-index:21'
+  ].join(';');
+  document.body.appendChild(overlay);
+
+  function openMenu() {
+    nav.classList.add('active');
+    overlay.style.display = 'block';
+  }
+  function closeMenu() {
+    nav.classList.remove('active');
+    overlay.style.display = 'none';
+  }
+
+  toggleBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    nav.classList.contains('active') ? closeMenu() : openMenu();
+  });
+
+  overlay.addEventListener('click', closeMenu);
+})();
 
   </script>
 </body>

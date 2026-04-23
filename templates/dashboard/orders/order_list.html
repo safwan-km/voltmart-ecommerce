@@ -12,7 +12,7 @@
 
     <select name="status" class="form-control">
         <option value="">All Status</option>
-        {% for key, value in orders.model.STATUS_CHOICES %}
+        {% for key, value in orders.model.ORDER_STATUS_CHOICES %}
             <option value="{{ key }}"
             {% if request.GET.status == key %}selected{% endif %}>
                 {{ value }}
@@ -56,13 +56,17 @@
             <td>₹ {{ order.final_amount }}</td>
             <td>
                 <span class="label
-                    {% if order.status == 'Pending' %}label-warning
-                    {% elif order.status == 'Processing' %}label-info
-                    {% elif order.status == 'Shipped' %}label-primary
-                    {% elif order.status == 'Delivered' %}label-success
+                    {% if order.order_status == 'Pending' %}label-warning
+                    {% elif order.order_status == 'Confirmed' %}label-info
+                    {% elif order.order_status == 'Shipped' %}label-primary
+                    {% elif order.order_status == 'Delivered' %}label-success
+                    {% elif order.order_status == 'Cancelled' %}label-danger
                     {% else %}label-default{% endif %}">
-                    {{ order.status }}
+                    {{ order.order_status }}
                 </span>
+            </td>
+            <td>
+                <p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
             </td>
             <td>{{ order.created_at }}</td>
             <td>

@@ -25,17 +25,30 @@ def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     quantity = int(request.POST.get('quantity', 1))
 
+    # Calculate current quantity in cart to prevent stock overflow
+    current_qty = 0
     if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(cart__user=request.user, cart__is_active=True, product=product)
+        if cart_items.exists():
+            current_qty = cart_items.first().quantity
+    else:
+        session_cart = request.session.get("cart", {})
+        current_qty = session_cart.get(str(product.id), 0)
 
+    # Validate stock
+    if current_qty + quantity > product.stock:
+        return JsonResponse({
+            "success": False,
+            "error_msg": f"Stock limit reached. Only {product.stock - current_qty} more available."
+        })
+
+    # Proceed if valid
+    if request.user.is_authenticated:
         add_to_user_cart(request.user, product.id, quantity)
-
         cart_items = CartItem.objects.filter(cart__user=request.user)
         cart_count = sum(item.quantity for item in cart_items)
-
     else:
-
         add_to_session_cart(request, product.id, quantity)
-
         session_cart = request.session.get("cart", {})
         cart_count = sum(session_cart.values())
 

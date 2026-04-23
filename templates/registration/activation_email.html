@@ -1,0 +1,6 @@
+Hi {{ user.username }},
+
+Please click on the link to confirm your registration:
+http://{{ domain }}{% url 'activate_email' uidb64=uid token=token %}
+
+If you didn't request this, you can safely ignore this email.

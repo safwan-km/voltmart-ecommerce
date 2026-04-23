@@ -31,9 +31,9 @@
           </div>
         </div>
         <div style="text-align:right;">
-          <span class="badge {% if order.status == 'Delivered' %}badge-success{% elif order.status == 'Shipped' %}badge-info{% elif order.status == 'Processing' %}badge-warning{% else %}badge-secondary{% endif %}"
+          <span class="badge {% if order.order_status == 'Delivered' %}badge-success{% elif order.order_status == 'Shipped' %}badge-info{% elif order.order_status == 'Processing' %}badge-warning{% else %}badge-secondary{% endif %}"
                 style="font-size:14px; padding:10px 20px; font-weight:600;">
-            {{ order.status }}
+            {{ order.order_status }}
           </span>
           <p style="color:#8D99AE; font-size:12px; margin:8px 0 0 0;">
             <i class="fa fa-calendar" style="margin-right:5px;"></i>{{ order.created_at|date:"d M Y, H:i" }}
@@ -55,7 +55,7 @@
                 </h5>
                 <div style="color:#333; line-height:1.6;">
                   <p style="margin:0 0 8px 0;"><strong>Method:</strong> {{ order.payment_method }}</p>
-                  <p style="margin:0 0 8px 0;"><strong>Status:</strong> <span style="color:#4CAF50; font-weight:500;">Paid</span></p>
+                  <p style="margin:0 0 8px 0;"><strong>Status:</strong> <span style="color:#4CAF50; font-weight:500;">{{ order.payment_status }}</span></p>
                   <p style="margin:0; font-size:18px;">
                     <strong>Total Amount:</strong>
                     <span style="color:#D10024; font-size:20px; font-weight:700;">₹{{ order.final_amount }}</span>
@@ -147,22 +147,57 @@
           </div>
 
           <!-- Action Buttons -->
-          <div style="text-center; display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+          <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
+
             <a href="{% url 'order_history' %}"
                style="padding:12px 25px; background:#f8f9fa; color:#2B2D42; border:1px solid #E4E7ED; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
               <i class="fa fa-arrow-left" style="margin-right:8px;"></i>Back to Orders
             </a>
-            {% if order.status == 'Delivered' %}
+
+            {% if order.order_status == 'DELIVERED' %}
               <a href="#"
                  style="padding:12px 25px; background:#D10024; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
                 <i class="fa fa-star" style="margin-right:8px;"></i>Write Review
               </a>
             {% endif %}
-            <a href="#"
-               style="padding:12px 25px; background:#4CAF50; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
-              <i class="fa fa-download" style="margin-right:8px;"></i>Download Invoice
-            </a>
+
+            {% if order.order_status == 'PENDING' or order.order_status == 'CONFIRMED' %}
+              <form method="post" action="{% url 'cancel_order' order.id %}" style="margin:0;" id="cancel-order-form">
+                {% csrf_token %}
+                {% if order.payment_status == 'PAID' %}
+                  <button type="button"
+                          onclick="confirmCancel('This order was paid. Cancelling will initiate a refund of ₹{{ order.final_amount }} to your account. Continue?')"
+                          style="padding:12px 25px; background:#e67e22; color:#fff; border:none; border-radius:4px; font-weight:600; font-size:14px; text-transform:uppercase; cursor:pointer;">
+                    <i class="fa fa-undo" style="margin-right:8px;"></i>Cancel &amp; Request Refund
+                  </button>
+                {% else %}
+                  <button type="button"
+                          onclick="confirmCancel('Are you sure you want to cancel this order? Your items will be restored to your cart.')"
+                          style="padding:12px 25px; background:#c0392b; color:#fff; border:none; border-radius:4px; font-weight:600; font-size:14px; text-transform:uppercase; cursor:pointer;">
+                    <i class="fa fa-times" style="margin-right:8px;"></i>Cancel Order
+                  </button>
+                {% endif %}
+              </form>
+
+              <script>
+              function confirmCancel(msg) {
+                  if (confirm(msg)) {
+                      document.getElementById('cancel-order-form').submit();
+                  }
+              }
+              </script>
+            {% endif %}
+
+
+            {% if order.order_status == 'CANCELLED' %}
+              <span style="padding:12px 25px; background:#f8f9fa; color:#8D99AE; border:1px solid #E4E7ED; border-radius:4px; font-weight:600; font-size:14px; text-transform:uppercase; display:inline-block;">
+                <i class="fa fa-ban" style="margin-right:8px;"></i>
+                {% if order.payment_status == 'REFUNDED' %}Cancelled — Refund Initiated{% else %}Order Cancelled{% endif %}
+              </span>
+            {% endif %}
+
           </div>
+
 
         </div>
       </div>

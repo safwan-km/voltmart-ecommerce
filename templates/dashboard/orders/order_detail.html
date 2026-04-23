@@ -5,9 +5,11 @@
 <hr>
 
 <p><strong>User:</strong> {{ order.user.username }} ({{ order.user.email }})</p>
-<p><strong>Total:</strong> ₹ {{ order.total_amount }}</p>
+<p><strong>Total:</strong> ₹ {{ order.final_amount }}</p>
 <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+<p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
 <p><strong>Created:</strong> {{ order.created_at }}</p>
+
 
 <hr>
 
@@ -51,9 +53,9 @@
     <div class="form-group">
         <label>Update Status</label>
         <select name="status" class="form-control">
-            {% for key, value in order.STATUS_CHOICES %}
+            {% for key, value in order.ORDER_STATUS_CHOICES %}
                 <option value="{{ key }}"
-                    {% if order.status == key %}selected{% endif %}>
+                    {% if order.order_status == key %}selected{% endif %}>
                     {{ value }}
                 </option>
             {% endfor %}

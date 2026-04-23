@@ -7,7 +7,8 @@ class EditProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'email']
-        
+
+
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True,
                              widget=forms.EmailInput(attrs={'class': 'form-control input', 'placeholder': 'Email'}))
@@ -20,3 +21,14 @@ class RegisterForm(UserCreationForm):
             'password1': forms.PasswordInput(attrs={'class': 'form-control input', 'placeholder': 'Password'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control input', 'placeholder': 'Confirm Password'}),
         }
+
+
+class DeleteAccountForm(forms.Form):
+    password = forms.CharField(
+        label='Confirm your password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control input',
+            'placeholder': 'Enter your current password',
+            'autofocus': True,
+        })
+    )

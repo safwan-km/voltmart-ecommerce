@@ -1,222 +1,191 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Home{% endblock %}
-{% block navigation %}
-<!-- NAVIGATION -->
-<nav id="navigation">
-    <!-- container -->
-    <div class="container">
-        <!-- responsive-nav -->
-        <div id="responsive-nav">
-            <!-- NAV -->
-            <ul class="main-nav nav navbar-nav">
-                <li class="active">
-                    <a href="{% url 'home' %}">Home</a>
-                </li>
-                <li>
-                    <a href="{% url 'store' %}">Categories</a>
-                </li>
-                {% for category in navbar_categories %}
-                <li>
-                    <a href="{% url 'store' %}?category={{ category.slug }}">{{ category.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-            <!-- /NAV -->
-        </div>
-        <!-- /responsive-nav -->
-    </div>
-    <!-- /container -->
-</nav>
-<!-- /NAVIGATION -->
-{% endblock %}
+
 {% block content %}
-{% if banner %}
-<div class="section">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
- <div class="hero-banner {{ banner.theme }}">
-
-    <img src="{{ banner.image.url }}" alt="{{ banner.title }}">
-
-    <div class="hero-caption">
-        <h2>{{ banner.title }}</h2>
-
-        {% if banner.subtitle %}
-            <p>{{ banner.subtitle }}</p>
-        {% endif %}
-
-        {% if banner.product %}
-            <a href="{% url 'product_detail' banner.product.slug %}" class="primary-btn">
-                View Product
-            </a>
-        {% endif %}
-    </div>
-
-</div>              
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-<!-- SECTION -->
-<div class="section">
-    <!-- container -->
-    <div class="container">
-        <!-- row -->
-        <div class="row">
-            <!-- shop -->
-            {% for category in categories %}
-            <div class="col-md-4 col-xs-6">
-                <div class="shop">
-                    <div class="shop-img">
-                        {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
-                        {% else %}
-                        <img src="{% static 'img/product01.png' %}" alt="{{ category.name }}">
-                        {% endif %}
-                    </div>
-                    <div class="shop-body">
-                        <h3>
-                            {{ category.name }}
-                            <br />
-                            Collection
-                        </h3>
-                        <a href="{% url 'store' %}?category={{ category.slug }}" class="cta-btn">
-                            Shop now <i class="fa fa-arrow-circle-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-            <!-- /shop -->
-        </div>
-        <!-- /row -->
-    </div>
-    <!-- /container -->
-</div>
-<!-- /SECTION -->
-<!-- SECTION -->
-<div class="section">
-    <!-- container -->
-    <div class="container">
-        <!-- row -->
-        <div class="row">
-            <!-- section title -->
-            <div class="col-md-12">
-                <div class="section-title">
-                    <h3 class="title">Latest Products</h3>
-                    <div class="section-nav">
-                        <a href="{% url 'store' %}" class="primary-btn">
-                            View All <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <!-- /section title -->
-            <!-- Products tab & slick -->
-            <div class="col-md-12">
+    {% if banner %}
+        <div class="section">
+            <div class="container">
                 <div class="row">
-                    <div class="products-tabs">
-                        <!-- tab -->
-                        <div id="tab1" class="tab-pane active">
-                            <div class="products-slick" data-nav="#slick-nav-1">
-                                <!-- product -->
-                                {% for product in products %}
-                                {% include "components/product_card.html" %}
-                            {% endfor %}
-                            <!-- /product -->
+                    <div class="col-md-12">
+                        <div class="hero-banner {{ banner.theme }}">
+                            <img src="{{ banner.image.url }}" alt="{{ banner.title }}">
+                            <div class="hero-caption">
+                                <h2>{{ banner.title }}</h2>
+                                {% if banner.subtitle %}<p>{{ banner.subtitle }}</p>{% endif %}
+                                {% if banner.product %}
+                                    <a href="{% url 'product_detail' banner.product.slug %}"
+                                       class="primary-btn">View Product</a>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div id="slick-nav-1" class="products-slick-nav"></div>
-                    </div>
-                    <!-- /tab -->
-                </div>
-            </div>
-        </div>
-        <!-- Products tab & slick -->
-    </div>
-    <!-- /row -->
-</div>
-<!-- /container -->
-</div>
-<!-- /SECTION -->
-<!-- SECTION -->
-<!-- SECTION -->
-<div class="section">
-    <div class="container">
-        <div class="row">
-            <!-- section title -->
-            <div class="col-md-12">
-                <div class="section-title">
-                    <h3 class="title">Featured Products</h3>
-                </div>
-            </div>
-            <!-- /section title -->
-            <!-- Products tab & slick -->
-            <div class="col-md-12">
-                <div class="row">
-                    <div class="products-tabs">
-                        <div id="tab2" class="tab-pane active">
-                            <div class="products-slick" data-nav="#slick-nav-2">
-                                {% for product in featured_products %}
-                                {% include "components/product_card.html" %}
-                            {% endfor %}
-                        </div>
-                        <div id="slick-nav-2" class="products-slick-nav"></div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- /Products tab & slick -->
+    {% endif %}
+
+    <!-- SECTION -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- shop -->
+                {% for category in categories %}
+                    <div class="col-md-4 col-xs-6">
+                        <div class="shop">
+                            <div class="shop-img">
+                                {% if category.image %}
+                                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                                {% else %}
+                                    <img src="{% static 'img/product01.png' %}" alt="{{ category.name }}">
+                                {% endif %}
+                            </div>
+                            <div class="shop-body">
+                                <h3>
+                                    {{ category.name }}
+                                    <br />
+                                    Collection
+                                </h3>
+                                <a href="{% url 'store' %}?category={{ category.slug }}" class="cta-btn">
+                                    Shop now <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <!-- /shop -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
     </div>
-</div>
-</div>
-<!-- /SECTION -->
-<!-- /SECTION -->
+    <!-- /SECTION -->
+     
+    <!-- SECTION -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- section title -->
+                <div class="col-md-12">
+                    <div class="section-title">
+                        <h3 class="title">Latest Products</h3>
+                        <div class="section-nav">
+                            <a href="{% url 'store' %}" class="primary-btn">
+                                View All <i class="fa fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- /section title -->
+                <!-- Products tab & slick -->
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="products-tabs">
+                            <!-- tab -->
+                            <div id="tab1" class="tab-pane active">
+                                <div class="products-slick" data-nav="#slick-nav-1">
+                                    <!-- product -->
+                                    {% for product in products %}
+                                        {% include "components/product_card.html" %}
+                                    {% endfor %}
+                                    <!-- /product -->
+                                </div>
+                                <div id="slick-nav-1" class="products-slick-nav"></div>
+                            </div>
+                            <!-- /tab -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Products tab & slick -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+    <!-- SECTION -->
+    <!-- SECTION -->
+    <div class="section">
+        <div class="container">
+            <div class="row">
+                <!-- section title -->
+                <div class="col-md-12">
+                    <div class="section-title">
+                        <h3 class="title">Featured Products</h3>
+                    </div>
+                </div>
+                <!-- /section title -->
+                <!-- Products tab & slick -->
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="products-tabs">
+                            <div id="tab2" class="tab-pane active">
+                                <div class="products-slick" data-nav="#slick-nav-2">
+                                    {% for product in featured_products %}
+                                        {% include "components/product_card.html" %}
+                                    {% endfor %}
+                                </div>
+                                <div id="slick-nav-2" class="products-slick-nav"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Products tab & slick -->
+            </div>
+        </div>
+    </div>
+    <!-- /SECTION -->
+    <!-- /SECTION -->
 {% endblock %}
 {% block Newsletter %}
-   <!-- NEWSLETTER -->
-  <div id="newsletter" class="section">
-    <!-- container -->
-    <div class="container">
-      <!-- row -->
-      <div class="row">
-        <div class="col-md-12">
-          <div class="newsletter">
-            <p>
-              Sign Up for the <strong>NEWSLETTER</strong>
-            </p>
-            <form id="newsletter-form">
-              {% csrf_token %}
-              <input class="input" type="email" name="email" placeholder="Enter Your Email" required />
-              <button type="submit" class="newsletter-btn">
-                <i class="fa fa-envelope"></i> Subscribe
-              </button>
-            </form>
-            <p id="newsletter-message" style="margin-top:10px;color:#28a745;"></p>
-            <ul class="newsletter-follow">
-              <li>
-                <a href="#"><i class="fa fa-facebook"></i></a>
-              </li>
-              <li>
-                <a href="#"><i class="fa fa-twitter"></i></a>
-              </li>
-              <li>
-                <a href="#"><i class="fa fa-instagram"></i></a>
-              </li>
-              <li>
-                <a href="#"><i class="fa fa-pinterest"></i></a>
-              </li>
-            </ul>
-          </div>
+    <!-- NEWSLETTER -->
+    <div id="newsletter" class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="newsletter">
+                        <p>
+                            Sign Up for the <strong>NEWSLETTER</strong>
+                        </p>
+                        <form id="newsletter-form">
+                            {% csrf_token %}
+                            <input class="input"
+                                   type="email"
+                                   name="email"
+                                   placeholder="Enter Your Email"
+                                   required />
+                            <button type="submit" class="newsletter-btn">
+                                <i class="fa fa-envelope"></i> Subscribe
+                            </button>
+                        </form>
+                        <p id="newsletter-message" style="margin-top:10px;color:#28a745;"></p>
+                        <ul class="newsletter-follow">
+                            <li>
+                                <a href="#"><i class="fa fa-facebook"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-twitter"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-instagram"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-pinterest"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- /row -->
         </div>
-      </div>
-      <!-- /row -->
+        <!-- /container -->
     </div>
-    <!-- /container -->
-  </div>
-  <!-- /NEWSLETTER -->
-   {% endblock %}
-{% block extra_js %}
+    <!-- /NEWSLETTER -->
 {% endblock %}
+{% block extra_js %}{% endblock %}

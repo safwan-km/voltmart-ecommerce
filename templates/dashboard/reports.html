@@ -1,50 +1,61 @@
 {% extends "dashboard/base.html" %}
 {% block content %}
 
-<h2>Reports</h2>
+<h2>Reports & Analytics</h2>
 <hr>
 
 <!-- Date Filter -->
-<form method="GET" class="form-inline">
-    <label>From:</label>
-    <input type="date" name="date_from" class="form-control"
-           value="{{ date_from }}">
-
-    <label>To:</label>
-    <input type="date" name="date_to" class="form-control"
-           value="{{ date_to }}">
-
-    <button type="submit" class="btn btn-primary">Apply</button>
+<form method="GET" class="form-inline" style="margin-bottom: 20px;">
+    <label style="margin-right: 8px;">From:</label>
+    <input type="date" name="date_from" class="form-control" value="{{ date_from }}" style="margin-right: 15px;">
+    <label style="margin-right: 8px;">To:</label>
+    <input type="date" name="date_to" class="form-control" value="{{ date_to }}" style="margin-right: 15px;">
+    <button type="submit" class="btn btn-primary">Apply Filter</button>
 </form>
-
-<br>
 
 <!-- Revenue Summary Cards -->
 <div class="row">
-
     <div class="col-md-4">
         <div class="panel panel-success">
-            <div class="panel-heading">Total Revenue</div>
-            <div class="panel-body">
-                ₹ {{ total_revenue }}
-            </div>
+            <div class="panel-heading"><strong>💰 Total Revenue</strong></div>
+            <div class="panel-body"><h3>₹ {{ total_revenue }}</h3></div>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="panel panel-info">
-            <div class="panel-heading">Total Orders</div>
-            <div class="panel-body">
-                {{ total_orders }}
-            </div>
+            <div class="panel-heading"><strong>📦 Total Orders (Paid)</strong></div>
+            <div class="panel-body"><h3>{{ total_orders }}</h3></div>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="panel panel-warning">
-            <div class="panel-heading">Average Order Value</div>
-            <div class="panel-body">
-                ₹ {{ avg_order_value|floatformat:2 }}
+            <div class="panel-heading"><strong>📊 Avg. Order Value</strong></div>
+            <div class="panel-body"><h3>₹ {{ avg_order_value|floatformat:2 }}</h3></div>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<!-- Charts Row -->
+<div class="row">
+
+    <!-- Pie Chart: Order Status -->
+    <div class="col-md-5">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>Order Status Breakdown</strong></div>
+            <div class="panel-body" style="height: 280px; display: flex; align-items: center; justify-content: center;">
+                <canvas id="statusChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bar Chart: Top Products -->
+    <div class="col-md-7">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>Top Selling Products (by Qty)</strong></div>
+            <div class="panel-body" style="height: 280px;">
+                <canvas id="productChart" style="max-height: 260px;"></canvas>
             </div>
         </div>
     </div>
@@ -53,78 +64,87 @@
 
 <hr>
 
-<!-- Order Status Breakdown -->
-<h4>Order Status Breakdown</h4>
+<!-- Status Breakdown Table -->
+<div class="row">
+    <div class="col-md-6">
+        <h4>Order Status Breakdown</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in status_data %}
+                <tr>
+                    <td>
+                        {% if item.order_status == "CONFIRMED" %}
+                            <span class="label label-success">{{ item.order_status }}</span>
+                        {% elif item.order_status == "PENDING" %}
+                            <span class="label label-warning">{{ item.order_status }}</span>
+                        {% elif item.order_status == "CANCELLED" %}
+                            <span class="label label-danger">{{ item.order_status }}</span>
+                        {% elif item.order_status == "DELIVERED" %}
+                            <span class="label label-info">{{ item.order_status }}</span>
+                        {% else %}
+                            <span class="label label-default">{{ item.order_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">No data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<div style="max-width: 500px; margin: 20px auto;">
-    <canvas id="statusChart"></canvas>
+    <!-- Top Products Table -->
+    <div class="col-md-6">
+        <h4>Top Selling Products</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty Sold</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in top_products %}
+                <tr>
+                    <td>{{ item.product__name }}</td>
+                    <td>{{ item.total_quantity }}</td>
+                    <td>₹ {{ item.total_revenue }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">No data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Status</th>
-            <th>Count</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in status_data %}
-        <tr>
-            <td>{{ item.status }}</td>
-            <td>{{ item.count }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<hr>
-
-<!-- Top Selling Products -->
-<h4>Top Selling Products</h4>
-
-<div style="max-width: 700px; margin: 20px auto;">
-    <canvas id="productChart"></canvas>
-</div>
-
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Total Quantity</th>
-            <th>Total Revenue</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in top_products %}
-        <tr>
-            <td>{{ item.product__name }}</td>
-            <td>{{ item.total_quantity }}</td>
-            <td>₹ {{ item.total_revenue }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 <hr>
 
 <!-- Coupon Usage -->
 <h4>Coupon Usage</h4>
-
-<table class="table table-bordered">
+<table class="table table-bordered table-striped" style="max-width: 400px;">
     <thead>
         <tr>
             <th>Coupon Code</th>
-            <th>Total Used</th>
+            <th>Times Used</th>
         </tr>
     </thead>
     <tbody>
         {% for item in coupon_usage %}
         <tr>
-            <td>{{ item.coupon__code }}</td>
+            <td><strong>{{ item.coupon__code }}</strong></td>
             <td>{{ item.total_used }}</td>
         </tr>
+        {% empty %}
+        <tr><td colspan="2">No coupon usage data.</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -133,51 +153,81 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    // Status Chart
+    // ---- PIE CHART: Order Status ----
     const statusCtx = document.getElementById('statusChart').getContext('2d');
 
+    const statusLabels = [
+        {% for item in status_data %}"{{ item.order_status }}",{% endfor %}
+    ];
+    const statusCounts = [
+        {% for item in status_data %}{{ item.count }},{% endfor %}
+    ];
+
     new Chart(statusCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-            labels: [
-                {% for item in status_data %}
-                    "{{ item.status }}",
-                {% endfor %}
-            ],
+            labels: statusLabels,
             datasets: [{
-                data: [
-                    {% for item in status_data %}
-                        {{ item.count }},
-                    {% endfor %}
-                ]
+                data: statusCounts,
+                backgroundColor: ['#f0ad4e', '#5cb85c', '#d9534f', '#5bc0de', '#777'],
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { font: { size: 12 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.label + ': ' + ctx.parsed + ' orders';
+                        }
+                    }
+                }
+            }
         }
     });
 
-
-    // Product Chart
+    // ---- BAR CHART: Top Products ----
     const productCtx = document.getElementById('productChart').getContext('2d');
+
+    const productLabels = [
+        {% for item in top_products %}"{{ item.product__name }}",{% endfor %}
+    ];
+    const productQty = [
+        {% for item in top_products %}{{ item.total_quantity }},{% endfor %}
+    ];
 
     new Chart(productCtx, {
         type: 'bar',
         data: {
-            labels: [
-                {% for item in top_products %}
-                    "{{ item.product__name }}",
-                {% endfor %}
-            ],
+            labels: productLabels,
             datasets: [{
-                label: 'Quantity Sold',
-                data: [
-                    {% for item in top_products %}
-                        {{ item.total_quantity }},
-                    {% endfor %}
-                ]
+                label: 'Units Sold',
+                data: productQty,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                borderRadius: 4
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
         }
     });
 </script>

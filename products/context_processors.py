@@ -1,8 +1,11 @@
 from .models import Category
 
 def navbar_categories(request):
+    categories = Category.objects.filter(is_active=True)
     return {
-        "navbar_categories": Category.objects.filter(is_active=True)[:6]
+        "navbar_categories": categories[:6],
+        "categories": categories
+        
     }
     
 from .models import Wishlist

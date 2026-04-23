@@ -3,10 +3,10 @@
     <div class="product-img">
         <img src="{{ product.image.url }}" alt="">
 
-        {% if now|date:"U"|add:"-604800" < product.created_at|date:"U" %}
-        <div class="product-label">
-            <span class="new">NEW</span>
-        </div>
+        {% if product.is_new %}
+            <div class="product-label">
+                <span class="new">NEW</span>
+            </div>
         {% endif %}
     </div>
 

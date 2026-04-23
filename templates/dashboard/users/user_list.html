@@ -68,6 +68,21 @@
             <td>
                 {% if request.user.is_superuser and not user.is_superuser %}
                     <form method="POST"
+                          action="{% url 'dashboard:user_toggle' user.id %}"
+                          style="display:inline;">
+                        {% csrf_token %}
+                        {% if user.is_active %}
+                            <button class="btn btn-xs btn-warning" title="Deactivate user">
+                                Deactivate
+                            </button>
+                        {% else %}
+                            <button class="btn btn-xs btn-success" title="Activate user">
+                                Activate
+                            </button>
+                        {% endif %}
+                    </form>
+
+                    <form method="POST"
                           action="{% url 'dashboard:user_toggle_staff' user.id %}"
                           style="display:inline;">
                         {% csrf_token %}

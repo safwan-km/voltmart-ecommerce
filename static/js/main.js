@@ -1,11 +1,7 @@
 (function($) {
 	"use strict"
 
-	// Mobile Nav toggle
-	$('.menu-toggle > a').on('click', function (e) {
-		e.preventDefault();
-		$('#responsive-nav').toggleClass('active');
-	})
+	// Mobile Nav toggle handled in base.html (with overlay)
 
 	// Fix cart dropdown from closing
 	$('.cart-dropdown').on('click', function (e) {
@@ -142,10 +138,8 @@
 
 	function updatePriceSlider(elem , value) {
 		if ( elem.hasClass('price-min') ) {
-			console.log('min')
 			priceSlider.noUiSlider.set([value, null]);
 		} else if ( elem.hasClass('price-max')) {
-			console.log('max')
 			priceSlider.noUiSlider.set([null, value]);
 		}
 	}

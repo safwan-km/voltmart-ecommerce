@@ -17,10 +17,10 @@ class OrderAdmin(admin.ModelAdmin):
         'discount_amount',
         'final_amount',
         'applied_coupon',
-        'status',
+        'order_status',
         'created_at',
     )
-    list_filter = ('status', 'created_at')
+    list_filter = ('order_status', 'created_at')
     search_fields = ('user__username', 'id')
 
 

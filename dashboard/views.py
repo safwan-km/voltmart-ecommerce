@@ -26,12 +26,12 @@ class DashboardHomeView(View):
 
     def get(self, request):
         total_orders = Order.objects.count()
-        pending_orders = Order.objects.filter(status="PENDING").count()
+        pending_orders = Order.objects.filter(order_status="PENDING").count()
         total_users = User.objects.count()
         total_products = Product.objects.count()
 
         revenue = Order.objects.filter(
-            status="PAID"
+            payment_status="PAID"
         ).aggregate(
             total=Sum("final_amount")
         )["total"] or 0
@@ -66,7 +66,7 @@ class OrderListView(View):
         # -------- STATUS FILTER --------
         status = request.GET.get("status")
         if status:
-            orders = orders.filter(status=status)
+            orders = orders.filter(order_status=status)
 
         # -------- DATE FILTER --------
         date_filter = request.GET.get("date")
@@ -117,11 +117,20 @@ class OrderDetailView(View):
 
         new_status = request.POST.get("status")
 
-        valid_status = [choice[0] for choice in Order.STATUS_CHOICES]
+        valid_status = [choice[0] for choice in Order.ORDER_STATUS_CHOICES]
+        
+        
 
         if new_status in valid_status:
-            order.status = new_status
+            order.order_status = new_status
+            
+            if new_status == 'DELIVERED' and order.payment_method == 'COD':
+                order.payment_status = 'PAID'
+            if new_status == 'CANCELLED':
+                order.payment_status = 'FAILED' 
+              
             order.save()
+
 
         return redirect("dashboard:order_detail", pk=pk)
 
@@ -400,7 +409,7 @@ class ReportsView(View):
 
     def get(self, request):
 
-        orders = Order.objects.filter(status="PAID")
+        orders = Order.objects.filter(payment_status="PAID")
 
         date_from = request.GET.get("date_from")
         date_to = request.GET.get("date_to")
@@ -424,7 +433,7 @@ class ReportsView(View):
         )
 
         # Order status breakdown
-        status_data = orders.values("status").annotate(
+        status_data = Order.objects.values("order_status").annotate(
             count=Count("id")
         )
 

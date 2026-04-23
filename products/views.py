@@ -3,7 +3,6 @@ from django.shortcuts import redirect, render,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Product,Category,HeroBanner,NewsletterSubscriber,Wishlist
 from django.core.paginator import Paginator
-from django.utils import timezone
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 
@@ -59,11 +58,17 @@ def store(request):
 
     products = Product.objects.filter(is_active=True)
     categories = Category.objects.filter(is_active=True)
-    category_slug = request.GET.get('category')
-    query = request.GET.get('q')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    sort = request.GET.get('sort')
+    category_slug = request.GET.get('category') or ''
+    query = request.GET.get('q') or ''
+    min_price = request.GET.get('min_price') or ''
+    max_price = request.GET.get('max_price') or ''
+    sort = request.GET.get('sort') or ''
+
+    # Guard against literal "None" strings sent by pagination links
+    if category_slug == 'None': category_slug = ''
+    if min_price == 'None': min_price = ''
+    if max_price == 'None': max_price = ''
+    if sort == 'None': sort = ''
     
     if query:
         products = products.filter(Q(name__icontains=query) |Q(description__icontains=query))
@@ -121,8 +126,10 @@ def subscribe_newsletter(request):
 
 
 @require_POST
-@login_required
 def toggle_wishlist(request, product_id):
+
+    if not request.user.is_authenticated:
+        return JsonResponse({"status": "login_required"}, status=401)
 
     product = get_object_or_404(Product, id=product_id)
 
@@ -137,10 +144,11 @@ def toggle_wishlist(request, product_id):
     else:
         status = "added"
 
+    wishlist_count = Wishlist.objects.filter(user=request.user).count()
 
     return JsonResponse({
         "status": status,
-        
+        "wishlist_count": wishlist_count
     })
 
 @login_required

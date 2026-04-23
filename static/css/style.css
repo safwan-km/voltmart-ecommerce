@@ -3116,3 +3116,35 @@ textarea.input {
 .order-success .primary-btn {
   margin-top: 20px;
 }
+
+/* ===============================
+   Cart Dropdown — Mobile Fix
+   =============================== */
+@media only screen and (max-width: 991px) {
+  /* Pin the dropdown to the bottom of the viewport so buttons are always reachable */
+  .cart-dropdown {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    z-index: 9999;
+  }
+
+  /* Make the buttons full-width and tall enough to tap easily */
+  .cart-dropdown .cart-btns {
+    margin: 0;
+    display: flex;
+  }
+
+  .cart-dropdown .cart-btns > a {
+    flex: 1;
+    width: 50%;
+    padding: 16px 8px;
+    font-size: 14px;
+  }
+}

@@ -12,6 +12,12 @@ body {
     background: #222d32;
     color: #b8c7ce;
     position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: left 0.3s ease;
 }
 
 .sidebar-header {
@@ -42,7 +48,8 @@ body {
 .main-content {
     margin-left: 230px;
     padding: 20px;
-    width: 100%;
+    width: calc(100% - 230px);
+    min-width: 0;
 }
 
 .form-group label {
@@ -62,13 +69,42 @@ body {
     font-weight: 500;
 }
 
+/* ── Mobile toggle button ── */
+#sidebarToggle {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    background: #222d32;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
 
-/* Mobile behavior */
+/* ── Overlay (closes sidebar on tap) ── */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+/* ── Mobile breakpoint ── */
 @media (max-width: 768px) {
+    #sidebarToggle {
+        display: block;
+    }
+
     .sidebar {
-        position: absolute;
         left: -230px;
-        transition: 0.3s;
     }
 
     .sidebar.active {
@@ -77,5 +113,26 @@ body {
 
     .main-content {
         margin-left: 0;
+        width: 100%;
+        padding: 60px 12px 20px; /* top pad for toggle button */
+    }
+
+    /* Tables scroll horizontally instead of overflowing */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Make form controls full width */
+    .form-control,
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Stack action buttons in tables */
+    .btn-xs {
+        display: inline-block;
+        margin-bottom: 4px;
     }
 }

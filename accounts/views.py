@@ -22,6 +22,7 @@ def profile(request):
 
 class CustomLoginView(LoginView):
     template_name = "registration/login.html"
+    redirect_authenticated_user = True  # already logged-in users skip the login page
 
     def get_success_url(self):
         # 1. Next URL
